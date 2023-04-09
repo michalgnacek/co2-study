@@ -19,10 +19,10 @@ class DataHandler:
         data = pd.DataFrame()
         if os.path.exists(mask_df):
             if os.path.exists(mask_event_df):
-                print('Loading data for participant: ' + participant_id)
+                print('Loading mask data for participant: ' + participant_id)
                 data = load_data_with_event_matching(mask_df, True, mask_event_df)
                 data = data.drop(columns=constants.REDUNDANT_MASK_COLUMNS)
-                print('Finished loading data for participant: ' + participant_id)
+                print('Finished mask loading data for participant: ' + participant_id)
             else:
                 print("Event file missing for participant: " + participant_id)
         else:
@@ -67,7 +67,7 @@ class DataHandler:
         else:
             #Some eye tracking files (participants 1-9) have empty 'TimestampUnix column'. Use their 'TimestampJ2000' to calculate unix column
             if np.mean(eye_df['TimestampUnix'].values)==0:
-                print('TimestampUnix column for eye data is empty. Converting J2000 timestamps to Unix')
+                # TimestampUnix column for eye data is empty. Converting J2000 timestamps to Unix
                 j2000_timestamps = eye_df['TimestampJ2000']
                 unix_timestamps = []
                 for j2000_timestamp in j2000_timestamps:
@@ -88,7 +88,7 @@ class DataHandler:
             # Sync function above contiounsly overwrites last row of data with those eye data frames. Set the last row back to 0 for forward propagation later.     
             synced_eye_df.loc[len(synced_eye_df)-1]=np.nan
             synced_data[eye_tracking_columns] = synced_eye_df
-            print('Forward filling eye tracking data')
+            # Forward filling eye tracking data
             synced_data[eye_tracking_columns] = synced_data[eye_tracking_columns].ffill()
             print('Finished synchronising mask and eye tracking files')
         
