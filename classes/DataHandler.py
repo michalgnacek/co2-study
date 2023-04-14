@@ -30,29 +30,7 @@ class DataHandler:
         else:
             print("Mask file missing for participant: " + participant_id)
         return data
-            
-    def load_eyetracking_data2(eye_df, participant_id):
-        # Load eye tracking data
-        data = pd.DataFrame()
-        
-        if os.path.exists(eye_df):
-            print('Loading eye data for participant: ' + participant_id)
-            data = pd.read_csv(eye_df)
-            print('Finished loading eye data for participant: ' + participant_id)
-            # First couple frames of eye tracking data are weird. Drop them.
-            data = data.drop(index=range(10)).reset_index(drop=True)
-            #Calculate mean pupil size for left and right eye ignoring -1 values (eye closed or tracking lost)
-            left_mean = np.ma.mean(np.ma.masked_where(data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value] == -1, data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value]))
-            right_mean = np.ma.mean(np.ma.masked_where(data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value] == -1, data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value]))
-            print(str(right_mean))
-            #Impute missing data using means
-            data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value].replace(-1, left_mean, inplace=True)
-            data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value].replace(-1, right_mean, inplace=True)  
-        else:
-            print("Eye file missing for participant: " + participant_id)
-        return data
-        
-    #concat timestamps for conversion, add air and c02 conditions, refactor code
+                    
     def load_eyetracking_data(eye_df, participant_id, condition):
         processed_eye_data_directory = os.path.join(os.getcwd(), 'temp', 'processed_eye_data')
         # Load eye tracking data
@@ -75,24 +53,6 @@ class DataHandler:
             data = impute_eye_data(eye_df)
             data.to_csv(participant_processed_eye_file)
         print('Finished loading eye data for participant: ' + participant_id)
-        return data
-        
-            
-        if os.path.exists(eye_df):
-            print('Loading eye data for participant: ' + participant_id)
-            data = pd.read_csv(eye_df)
-            print('Finished loading eye data for participant: ' + participant_id)
-            # First couple frames of eye tracking data are weird. Drop them.
-            data = data.drop(index=range(10)).reset_index(drop=True)
-            #Calculate mean pupil size for left and right eye ignoring -1 values (eye closed or tracking lost)
-            #left_mean = np.ma.mean(np.ma.masked_where(data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value] == -1, data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value]))
-            #right_mean = np.ma.mean(np.ma.masked_where(data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value] == -1, data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value]))
-            #print(str(right_mean))
-            #Impute missing data using means
-            #data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value].replace(-1, left_mean, inplace=True)
-            #data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value].replace(-1, right_mean, inplace=True)  
-        else:
-            print("Eye file missing for participant: " + participant_id)
         return data
     
     def load_biopac_data(biopac_df, biopac_start_unix, participant_id):
