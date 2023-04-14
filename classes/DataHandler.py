@@ -11,7 +11,9 @@ import numpy as np
 
 from utils.load_data import load_data_with_event_matching
 from utils.timestamps import j2000_to_unix, generate_biopac_unix_timestamps
+from utils.impute_eye_tracking_data import impute_eye_data
 import utils.constants as constants
+from sklearn.preprocessing import MinMaxScaler
 
 class DataHandler:
     
@@ -29,7 +31,7 @@ class DataHandler:
             print("Mask file missing for participant: " + participant_id)
         return data
             
-    def load_eyetracking_data(eye_df, participant_id):
+    def load_eyetracking_data2(eye_df, participant_id):
         # Load eye tracking data
         data = pd.DataFrame()
         
@@ -39,6 +41,56 @@ class DataHandler:
             print('Finished loading eye data for participant: ' + participant_id)
             # First couple frames of eye tracking data are weird. Drop them.
             data = data.drop(index=range(10)).reset_index(drop=True)
+            #Calculate mean pupil size for left and right eye ignoring -1 values (eye closed or tracking lost)
+            left_mean = np.ma.mean(np.ma.masked_where(data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value] == -1, data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value]))
+            right_mean = np.ma.mean(np.ma.masked_where(data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value] == -1, data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value]))
+            print(str(right_mean))
+            #Impute missing data using means
+            data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value].replace(-1, left_mean, inplace=True)
+            data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value].replace(-1, right_mean, inplace=True)  
+        else:
+            print("Eye file missing for participant: " + participant_id)
+        return data
+        
+    #concat timestamps for conversion, add air and c02 conditions, refactor code
+    def load_eyetracking_data(eye_df, participant_id, condition):
+        processed_eye_data_directory = os.path.join(os.getcwd(), 'temp', 'processed_eye_data')
+        # Load eye tracking data
+        print('Loading eye data for participant: ' + participant_id)
+        data = pd.DataFrame()
+        #if temp folder exists
+        if(os.path.exists(processed_eye_data_directory)):
+            #Eye tracking folder within temp folder exists, check for individual processed participant file
+            participant_processed_eye_file = os.path.join(processed_eye_data_directory, participant_id + '_' + condition + '.csv')
+            print(participant_processed_eye_file)
+            if os.path.exists(participant_processed_eye_file):
+                #load filled eye tracking date
+                print('Imputed eye data file exists. Loading from temp/processed_eye_data')
+                data = pd.read_csv(participant_processed_eye_file, index_col=0)
+            else:
+                data = impute_eye_data(eye_df)
+                data.to_csv(participant_processed_eye_file)
+        else:
+            os.mkdir(processed_eye_data_directory)
+            data = impute_eye_data(eye_df)
+            data.to_csv(participant_processed_eye_file)
+        print('Finished loading eye data for participant: ' + participant_id)
+        return data
+        
+            
+        if os.path.exists(eye_df):
+            print('Loading eye data for participant: ' + participant_id)
+            data = pd.read_csv(eye_df)
+            print('Finished loading eye data for participant: ' + participant_id)
+            # First couple frames of eye tracking data are weird. Drop them.
+            data = data.drop(index=range(10)).reset_index(drop=True)
+            #Calculate mean pupil size for left and right eye ignoring -1 values (eye closed or tracking lost)
+            #left_mean = np.ma.mean(np.ma.masked_where(data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value] == -1, data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value]))
+            #right_mean = np.ma.mean(np.ma.masked_where(data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value] == -1, data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value]))
+            #print(str(right_mean))
+            #Impute missing data using means
+            #data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value].replace(-1, left_mean, inplace=True)
+            #data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value].replace(-1, right_mean, inplace=True)  
         else:
             print("Eye file missing for participant: " + participant_id)
         return data
@@ -119,6 +171,30 @@ class DataHandler:
             print('Finished synchronising mask and biopac files')
             
         return synced_data
+    
+    def filter_fit_state_threshold(data):
+        return data[data["Faceplate/FitState"] > constants.FIT_STATE_THRESHOLD]
+    
+    def normalise_data(expression_calibration_data, brightness_calibration_data, condition_data, complete_synced_data):
+        normalised_data = complete_synced_data
+        #TODO: Normalise Left pupul size
+        left_eye_min_max_scaler = MinMaxScaler()
+        left_eye_min_max_scaler.fit([brightness_calibration_data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value]])
+        normalised_data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value] = left_eye_min_max_scaler.transform(constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value)
+        #TODO: Normalise Right pupul size
+        right_eye_min_max_scaler = MinMaxScaler()
+        right_eye_min_max_scaler.fit([brightness_calibration_data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value]])
+        normalised_data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value] = right_eye_min_max_scaler.transform(constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value)
+        
+        print(normalised_data[[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value, constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value]])
+        #TODO: Normalise GSR data
+        #TODO: Normalise Breathing Rate data
+        #TODO: Normalise EyeTracking data
+        #TODO: EMG Amplitude data
+        #TODO: EMG Contact data
+        #TODO: EMG Filtered data
+        #TODO: Normalise PPG data?
+        return normalised_data[[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value, constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value]]
     
 
 

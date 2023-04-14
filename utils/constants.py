@@ -26,3 +26,9 @@ class CO2Files(Enum):
 REDUNDANT_MASK_COLUMNS = ['Emg/RawLift[RightOrbicularis]', 'Emg/RawLift[RightZygomaticus]', 'Emg/RawLift[RightFrontalis]', 'Emg/RawLift[CenterCorrugator]', 'Emg/RawLift[LeftFrontalis]', 'Emg/RawLift[LeftZygomaticus]', 'Emg/RawLift[LeftOrbicularis]',
                           'Emg/ContactStates[RightOrbicularis]', 'Emg/ContactStates[RightZygomaticus]', 'Emg/ContactStates[RightFrontalis]', 'Emg/ContactStates[CenterCorrugator]', 'Emg/ContactStates[LeftFrontalis]', 'Emg/ContactStates[LeftZygomaticus]', 'Emg/ContactStates[LeftOrbicularis]',
                           'Magnetometer/Raw.x', 'Magnetometer/Raw.y', 'Magnetometer/Raw.z']
+
+FIT_STATE_THRESHOLD = 7
+
+class DATA_COLUMNS(Enum):
+    EYE_LEFT_PUPIL_SIZE = 'VerboseData.Left.PupilDiameterMm'
+    EYE_RIGHT_PUPIL_SIZE = 'VerboseData.Right.PupilDiameterMm'
