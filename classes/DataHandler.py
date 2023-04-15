@@ -132,9 +132,6 @@ class DataHandler:
             
         return synced_data
     
-    def filter_fit_state_threshold(data):
-        return data[data["Faceplate/FitState"] > constants.FIT_STATE_THRESHOLD]
-    
     def normalise_data(expression_calibration_data, brightness_calibration_data, condition_data, complete_synced_data):
         normalised_data = complete_synced_data
         #TODO: Normalise Left pupul size
