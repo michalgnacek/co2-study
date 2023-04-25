@@ -132,6 +132,37 @@ class DataHandler:
             
         return synced_data
     
+    def save_participant_data(participant_id, air_expression_calibration_data, air_brightness_calibration_data, air_condition_data,
+                              co2_expression_calibration_data, co2_brightness_calibration_data, co2_condition_data):
+        
+        air_expression_calibration_data.insert(2, 'Stage', 'expression_calibration')
+        air_brightness_calibration_data.insert(2, 'Stage', 'brightness_calibration')
+        air_condition_data.insert(2, 'Stage', 'condition')
+        
+
+        co2_expression_calibration_data.insert(2, 'Stage', 'expression_calibration')
+        co2_brightness_calibration_data.insert(2, 'Stage', 'brightness_calibration')
+        co2_condition_data.insert(2, 'Stage', 'condition')
+        
+        # concatenate all data frames into a single data frame
+        combined_data = pd.concat([air_expression_calibration_data, air_brightness_calibration_data, air_condition_data,
+                                  co2_expression_calibration_data, co2_brightness_calibration_data, co2_condition_data])
+        
+        # reset the index of the new data frame
+        combined_data.reset_index(drop=True, inplace=True)
+        
+        df_downsampled = combined_data.iloc[::20]
+        df_downsampled.reset_index(drop=True, inplace=True)
+        
+        processed_participant_directory = os.path.join(os.getcwd(), 'temp', 'processed_participant_data')
+        #if temp folder does not exist
+        if(not os.path.exists(processed_participant_directory)):
+            os.mkdir(processed_participant_directory)
+            
+        processed_participant_file = os.path.join(processed_participant_directory, str(participant_id))
+        df_downsampled.to_csv(processed_participant_file + '.csv', index=False)
+
+    
     def normalise_data(expression_calibration_data, brightness_calibration_data, condition_data, complete_synced_data):
         normalised_data = complete_synced_data
         #TODO: Normalise Left pupul size
