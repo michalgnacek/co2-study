@@ -36,3 +36,24 @@ class DATA_COLUMNS(Enum):
     
 class FREQUENCIES(Enum):
     EYE_TRACKING = 120
+    
+NORMALISATION_COLUMNS = [
+       'Emg/Contact[RightOrbicularis]', 'Emg/Raw[RightOrbicularis]',
+       'Emg/Filtered[RightOrbicularis]', 'Emg/Amplitude[RightOrbicularis]',
+       'Emg/Contact[RightZygomaticus]', 'Emg/Raw[RightZygomaticus]',
+       'Emg/Filtered[RightZygomaticus]', 'Emg/Amplitude[RightZygomaticus]',
+       'Emg/Contact[RightFrontalis]', 'Emg/Raw[RightFrontalis]',
+       'Emg/Filtered[RightFrontalis]', 'Emg/Amplitude[RightFrontalis]',
+       'Emg/Contact[CenterCorrugator]', 'Emg/Raw[CenterCorrugator]',
+       'Emg/Filtered[CenterCorrugator]', 'Emg/Amplitude[CenterCorrugator]',
+       'Emg/Contact[LeftFrontalis]', 'Emg/Raw[LeftFrontalis]',
+       'Emg/Filtered[LeftFrontalis]', 'Emg/Amplitude[LeftFrontalis]',
+       'Emg/Contact[LeftZygomaticus]', 'Emg/Raw[LeftZygomaticus]',
+       'Emg/Filtered[LeftZygomaticus]', 'Emg/Amplitude[LeftZygomaticus]',
+       'Emg/Contact[LeftOrbicularis]', 'Emg/Raw[LeftOrbicularis]',
+       'Emg/Filtered[LeftOrbicularis]', 'Emg/Amplitude[LeftOrbicularis]',
+       'HeartRate/Average', 'Ppg/Raw.ppg', 'Ppg/Raw.proximity',
+       'Accelerometer/Raw.x', 'Accelerometer/Raw.y', 'Accelerometer/Raw.z',
+       'Gyroscope/Raw.x', 'Gyroscope/Raw.y', 'Gyroscope/Raw.z', 'Pressure/Raw',
+       'VerboseData.Right.PupilDiameterMm', 'VerboseData.Left.PupilDiameterMm', 
+       'Biopac_GSR', 'Biopac_RSP']

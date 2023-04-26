@@ -20,6 +20,8 @@ class Participant:
         self.co2_biopac_data = pd.DataFrame()
         self.co2_synced_data = pd.DataFrame()
         
+        self.synced_data = pd.DataFrame()
+        
     def set_air_mask_data(self, data):
         data.insert(0, 'Participant_No', self.id)
         data.insert(1, 'Condition', 'AIR')
@@ -47,6 +49,9 @@ class Participant:
         
     def set_co2_synced_data(self, data):
         self.co2_synced_data = data
+        
+    def set_synced_data(self, data):
+        self.synced_data = data
     
     def get_expression_calibration_data(self, condition):
         if condition=='air':
@@ -55,13 +60,7 @@ class Participant:
             data = self.co2_synced_data
         else:
             print('Invalid condition')
-        # Get start and end unix timestamps for expression calibration
-        calibration_data_row_pair = data[data['Event']=='Calibration']
-        if(len(calibration_data_row_pair)!=2):
-            print('Invalid events for expression calibration')
-        else:
-            data = data.loc[calibration_data_row_pair.index[0]:calibration_data_row_pair.index[1]]
-        return data
+        return data[(data['Segment']=='expression_calibration') & (data['Condition']==condition.upper())]
     
     def get_brightness_calibration_data(self, condition):
         if condition=='air':
@@ -70,13 +69,7 @@ class Participant:
             data = self.co2_synced_data
         else:
             print('Invalid condition')
-        # Get start and end unix timestamps for brightness calibration
-        calibration_data_row_pair = data[data['Event']=='Brightness Calibration']
-        if(len(calibration_data_row_pair)!=2):
-            print('Invalid events for expression calibration')
-        else:
-            data = data.loc[calibration_data_row_pair.index[0]:calibration_data_row_pair.index[1]]
-        return data
+        return data[(data['Segment']=='brightness_calibration') & (data['Condition']==condition.upper())]
     
     def get_condition_data(self, condition):
         if condition=='air':
@@ -85,12 +78,5 @@ class Participant:
             data = self.co2_synced_data
         else:
             print('Invalid condition')
-        # Get start and end unix timestamps for expression calibration
-        calibration_data_row_pair = data[data['Event']=='Condition 1']
-        if(len(calibration_data_row_pair)!=2):
-            print('Invalid events for expression calibration')
-        else:
-            data = data.loc[calibration_data_row_pair.index[0]:calibration_data_row_pair.index[1]]
-        #participant.air_synced_data['Event'][participant.air_synced_data['Event']!='']
-        return data
+        return data[(data['Segment']=='gas_inhalation') & (data['Condition']==condition.upper())]
         

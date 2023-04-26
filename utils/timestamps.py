@@ -52,7 +52,7 @@ def read_j2000(j2000_timestamp):
 
     """
     j2000_timestamp = 704397173515
-    utc_date_time = datetime.datetime(2000, 1, 1, 0, 0) + datetime.timedelta(milliseconds=j2000_timestamp)
+    utc_date_time = datetime.datetime(2000, 1, 1, 1, 0) + datetime.timedelta(milliseconds=j2000_timestamp)
     formatted_date_time = utc_date_time.strftime("%Y-%m-%d %H:%M:%S UTC")
     return formatted_date_time
     
@@ -70,7 +70,7 @@ def j2000_to_unix(j2000_timestamp):
         CONVERTED UNIX TIMESTAMP.
 
     """
-    utc_date_time = datetime.datetime(2000, 1, 1, 1, 0) + datetime.timedelta(milliseconds=j2000_timestamp)
+    utc_date_time = datetime.datetime(2000, 1, 1, 3, 0) + datetime.timedelta(milliseconds=j2000_timestamp)
     unix_timestamp = int(utc_date_time.timestamp()*1000)
     return unix_timestamp
 
@@ -96,7 +96,7 @@ def biopac_file_name_to_unix(biopac_file_name):
     else:
         print('Incorrect biopac time file name. Unable to synchronise biopac and mask data.')
     
-    return (datetime.datetime.strptime(biopac_file_name, pattern)).timestamp()
+    return (datetime.datetime.strptime(biopac_file_name, pattern)).timestamp()+7200
 
 def generate_biopac_unix_timestamps(biopac_df, biopac_start_unix):
     """
