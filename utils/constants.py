@@ -57,3 +57,5 @@ NORMALISATION_COLUMNS = [
        'Gyroscope/Raw.x', 'Gyroscope/Raw.y', 'Gyroscope/Raw.z', 'Pressure/Raw',
        'VerboseData.Right.PupilDiameterMm', 'VerboseData.Left.PupilDiameterMm', 
        'Biopac_GSR', 'Biopac_RSP']
+
+EVENTS_TO_IGNORE = ['Starting Condition 1 Recording', 'Finished Condition 1 Recording', 'Condition 1 Completed', 'Condition 1 Scene']

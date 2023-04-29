@@ -18,6 +18,7 @@ import re
 from io import StringIO
 
 from . import config
+import utils.constants as constants
 
 # =============================================================================
 # Main
@@ -126,8 +127,9 @@ def load_data_with_event_matching(path_to_data, events_file, path_to_event_marke
                 timestamps = []
         
                 for i in range(0, len(data)):
-                    events.append(data[i]['Label'])
-                    timestamps.append(data[i]['Timestamp'])
+                    if(data[i]['Label'] not in constants.EVENTS_TO_IGNORE):
+                        events.append(data[i]['Label'])
+                        timestamps.append(data[i]['Timestamp'])
                     
                     
             #If events have pairs

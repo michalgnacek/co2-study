@@ -31,31 +31,37 @@ from classes.DataHandler import DataHandler
 eye_df = DataHandler.load_eyetracking_data('D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\2_john\\air\\2022-04-30 131019.eyedata.csv', '2')
 #%%
 from classes.DataHandler import DataHandler
-air_mask_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\2_john\\air\\2022-04-30T13-05-19.csv'
-air_event_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\2_john\\air\\2022-04-30T13-05-19.json'
-air_eyetracking_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\2_john\\air\\2022-04-30 131019.eyedata.csv'
-air_biopac_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\2_john\\air\\air.txt' 
-air_biopac_start_unix = 1651320511.0
+air_mask_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\air\\2022-08-15T12-10-29.csv'
+air_event_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\air\\2022-08-15T12-10-29.json'
+air_eyetracking_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\air\\2022-08-15 121405.eyedata.csv'
+air_biopac_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\air\\air.txt'
+air_biopac_start_unix = 1660561855.0
 
-air_mask_data = DataHandler.load_mask_data(air_mask_file, air_event_file, '2_john')
-air_eye_data = DataHandler.load_eyetracking_data(air_eyetracking_file, '2_john', 'air')
-air_biopac_data = DataHandler.load_biopac_data(air_biopac_file, air_biopac_start_unix, '2_john')
+air_mask_data = DataHandler.load_mask_data(air_mask_file, air_event_file, '10_benjamin')
+air_eye_data = DataHandler.load_eyetracking_data(air_eyetracking_file, '10_benjamin', 'air')
+air_biopac_data = DataHandler.load_biopac_data(air_biopac_file, air_biopac_start_unix, '10_benjamin')
 
-co2_mask_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\2_john\\co2\\2022-04-30T14-28-14.csv'
-co2_event_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\2_john\\co2\\2022-04-30T14-28-14.json'
-co2_eyetracking_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\2_john\\co2\\2022-04-30 143009.eyedata.csv'
-co2_biopac_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\2_john\\co2\\co2.txt'
-co2_biopac_start_unix = 1651325343.0
+co2_mask_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\co2\\2022-08-15T12-58-30.csv'
+co2_event_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\co2\\2022-08-15T12-58-30.json'
+co2_eyetracking_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\co2\\2022-08-15 130129.eyedata.csv'
+co2_biopac_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\co2\\co2.txt'
+co2_biopac_start_unix = 1660564699.0
 
-co2_mask_data = DataHandler.load_mask_data(co2_mask_file, co2_event_file, '2_john')
-co2_eye_data = DataHandler.load_eyetracking_data(co2_eyetracking_file, '2_john', 'co2')
-co2_biopac_data = DataHandler.load_biopac_data(co2_biopac_file, co2_biopac_start_unix, '2_john')
+co2_mask_data = DataHandler.load_mask_data(co2_mask_file, co2_event_file, '10_benjamin')
+co2_eye_data = DataHandler.load_eyetracking_data(co2_eyetracking_file, '10_benjamin', 'co2')
+co2_biopac_data = DataHandler.load_biopac_data(co2_biopac_file, co2_biopac_start_unix, '10_benjamin')
 
 #%%
 from classes.DataHandler import DataHandler
 air_synced_signal = DataHandler.sync_signal_data(air_mask_data, air_eye_data, air_biopac_data, air_biopac_start_unix)
 #%%
 co2_synced_signal = DataHandler.sync_signal_data(co2_mask_data, co2_eye_data, co2_biopac_data, co2_biopac_start_unix)
+#%%
+test = DataHandler.label_data(co2_synced_signal.copy())
+
+#%%
+co2_mask_data = DataHandler.load_mask_data(co2_mask_file, co2_event_file, '3_karolina')
+
 #%%
 
 downsampled_data = DataHandler.downsample_participant_data('2_john', DataHandler.label_data(air_synced_signal), DataHandler.label_data(co2_synced_signal))
@@ -104,16 +110,22 @@ plt.show()
 
 #%%
 from classes.DataHandler import DataHandler
-df = pd.read_csv(r'D:\co2-study\temp\synced_participant_data\2_john.csv')
+df = pd.read_csv(r'D:\co2-study\temp\synced_participant_data\4_raff.csv')
 normalised_data = DataHandler.normalise_data(df)
 #%%
 import matplotlib.pyplot as plt
 
-plt.plot(normalised_data['VerboseData.Left.PupilDiameterMm'])
+plot_participant_overview(normalised_data, True)
 #%%
-from utils.timestamps import read_unix
+from utils.timestamps import read_unix, j2000_to_unix
 
 #%%
 plot_participant_overview(normalised_data)
+#%%
+first_time_value = normalised_data.loc[normalised_data['Segment'] == 'gas_inhalation', 'Time'].iloc[0]
+last_time_value = normalised_data.loc[normalised_data['Segment'] == 'gas_inhalation', 'Time'].iloc[-1]
+time = last_time_value - first_time_value
+print(time/60)
 
-
+#%%
+read_unix(1652106477.43704)
