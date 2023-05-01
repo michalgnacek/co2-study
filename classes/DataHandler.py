@@ -17,7 +17,9 @@ from utils.impute_eye_tracking_data import impute_eye_data
 import utils.constants as constants
 from utils.normalisation import min_max_normalisation
 from sklearn.preprocessing import MinMaxScaler
-import utils.Filters as Filters
+import utils.filters as filters
+from utils.generate_sliding_windows import generate_sliding_windows
+from classes.Features import calculate_statistical_features
 
 class DataHandler:
     
@@ -204,6 +206,13 @@ class DataHandler:
                 normalised_data[col_name][air_data.index[0]:air_data.index[len(normalised_air_data)-1]+1] = normalised_air_data.reshape(-1)
                 normalised_data[col_name][co2_data.index[0]:co2_data.index[len(normalised_co2_data)-1]+1] = normalised_co2_data.reshape(-1)
                 
+        #Check that all segments and condition labels are prescent and that GSR and Eye tracking have been synced
+        if (len(normalised_data['Condition'].unique())!=2):
+            print('!!!Condition missing')
+        if (len(normalised_data['Segment'][normalised_data['Condition']=='AIR'].unique())!=3):
+            print('!!!Air segment missing')
+        if (len(normalised_data['Segment'][normalised_data['Condition']=='CO2'].unique())!=3):
+            print('!!!CO2 segment missing')
         return normalised_data
     
     def label_data(data):
@@ -232,11 +241,62 @@ class DataHandler:
     
     def filter_data(participant_df):
         filtered_data = participant_df.copy()
-        filtered_data = Filters.filter_pupil_size(filtered_data)
-        filtered_data = Filters.filter_biopac_gsr(filtered_data)
-        filtered_data = Filters.filter_biopac_respiration(filtered_data)
+        filtered_data = filters.filter_pupil_size(filtered_data)
+        filtered_data = filters.filter_biopac_gsr(filtered_data)
+        filtered_data = filters.filter_biopac_respiration(filtered_data)
+        filtered_data = filters.filter_ppg(filtered_data)
+        filtered_data = filters.filter_contact(filtered_data)
         
         return filtered_data
+    
+    def extract_features(participant_df):
+        
+        features_directory = os.path.join(os.getcwd(), 'temp', 'features')
+        participant_number = participant_df['Participant_No'].unique()
+        
+        if(len(participant_number)!=1):
+            print('Invalid participant file')
+            return np.nan
+        else:
+            participant_number = participant_number[0]
+        
+        if (not os.path.exists(features_directory)):
+            os.mkdir(features_directory)
+        participant_features_file = os.path.join(features_directory, participant_number + '.csv')
+        if (not os.path.exists(participant_features_file)):
+        
+            print('Extracting features for participant: ' + str(participant_number))
+            df = participant_df.copy()
+            df = df[~df['Segment'].isna()].reset_index(drop=True)
+    
+            columns_to_calculate = ['Biopac_GSR', 'Biopac_RSP']  # Specify the columns to calculate features for
+            result = pd.DataFrame()
+            
+            for condition in df['Condition'].unique():
+                condition_df = df[df['Condition']==condition]
+                for segment in df['Segment'].unique():
+                    segment_df = condition_df[condition_df['Segment']==segment]
+    
+                    windows = generate_sliding_windows(segment_df, 5, 3)
+                    segment_result = pd.DataFrame()
+                    for window in windows:
+                        window_features = pd.DataFrame()
+                        for column_name, column_data in window[columns_to_calculate].iteritems(): 
+                            features = calculate_statistical_features(column_data, column_name)
+                            if(window_features.empty):
+                                window_features = pd.DataFrame([features])
+                            else:
+                                window_features = pd.concat([window_features, pd.DataFrame([features])], axis=1)
+                        segment_result = pd.concat([segment_result, window_features], ignore_index=True)
+                    segment_result.insert(0, 'Condition', condition)
+                    segment_result.insert(1, 'Segment', segment)
+                    result = pd.concat([result, segment_result]).reset_index(drop=True)
+            
+            result.to_csv(participant_features_file)
+            return result
+        else:
+            print('Features file found. Loading features file for participant: ' + str(participant_number))
+            return  pd.read_csv(participant_features_file, index_col=0)
     
     
 

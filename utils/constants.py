@@ -33,6 +33,9 @@ FIT_STATE_THRESHOLD2 = 7
 class DATA_COLUMNS(Enum):
     EYE_LEFT_PUPIL_SIZE = 'VerboseData.Left.PupilDiameterMm'
     EYE_RIGHT_PUPIL_SIZE = 'VerboseData.Right.PupilDiameterMm'
+    EMG_CONTACT = ['Emg/Contact[RightOrbicularis]', 'Emg/Contact[RightZygomaticus]', 'Emg/Contact[RightFrontalis]',
+                   'Emg/Contact[CenterCorrugator]', 'Emg/Contact[LeftFrontalis]', 'Emg/Contact[LeftZygomaticus]',
+                   'Emg/Contact[LeftOrbicularis]']
     
 class FREQUENCIES(Enum):
     EYE_TRACKING = 120

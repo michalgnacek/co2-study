@@ -58,3 +58,27 @@ def calculate_hrv_features(df_ppg, sampling_frequency, return_plot=False):
     # plt.savefig(save_path_plot)
     # plt.close()
     return hrv_time_features
+
+def calculate_statistical_features(window, column_name):
+    features = {}
+    features[column_name + '_mean'] = np.mean(window)
+    features[column_name + '_std'] = np.std(window)
+    features[column_name + '_min'] = np.min(window)
+    features[column_name + '_max'] = np.max(window)
+    features[column_name + '_median'] = np.median(window)
+    
+    # Calculate maximum and minimum ratio
+    max_value = np.max(window)
+    min_value = np.min(window)
+    features[column_name + '_max_ratio'] = max_value / np.abs(min_value)
+    features[column_name + '_min_ratio'] = min_value / np.abs(max_value)
+    
+    # Calculate first and second derivatives
+    first_derivative = np.gradient(window)
+    second_derivative = np.gradient(first_derivative)
+    features[column_name + '_1st_derivative_mean'] = np.mean(first_derivative)
+    features[column_name + '_1st_derivative_std'] = np.std(first_derivative)
+    features[column_name + '_2nd_derivative_mean'] = np.mean(second_derivative)
+    features[column_name + '_2nd_derivative_std'] = np.std(second_derivative)
+    
+    return features

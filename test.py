@@ -12,12 +12,14 @@ import pandas as pd
 from utils.load_data import load_data_with_event_matching
 from datetime import datetime
 from classes.Participant import Participant
-from classes.Filters import Filters
 import matplotlib.pyplot as plt
 import numpy as np
-from utils.plots import plot_eyetracking_filter, plot_participant_overview
+from utils.plots import plot_eyetracking_filter, plot_participant_overview, plot_assess_filter
 from utils.normalisation import eye_tracking as normalise_eye_tracking
+from classes.DataHandler import DataHandler
 # Constants
+import utils.constants as constants
+from classes.Features import calculate_statistical_features
 
 # Root directory for co2 data
 CO2_DATA_DIRECTORY = r"D:\OneDrive - Bournemouth University\Studies\CO2 study\working_data"
@@ -129,3 +131,141 @@ print(time/60)
 
 #%%
 read_unix(1652106477.43704)
+
+#%%
+synced_participant_file = 'D:\\co2-study\\temp\\synced_participant_data\\63_reuben_moerman.csv'
+participant_df = pd.read_csv(synced_participant_file)
+participant_df = DataHandler.normalise_data(participant_df)
+#%%
+test = DataHandler.filter_data(participant_df)
+#test['Segment'] = test['Segment'].fillna('setup')
+
+#%% PUPIL SIZE
+import matplotlib.pyplot as plt
+
+unfiltered_signal = participant_df[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value]
+filtered_signal = test[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value]
+plot_assess_filter(unfiltered_signal, filtered_signal)
+
+#%% GSR
+import matplotlib.pyplot as plt
+
+unfiltered_signal = participant_df['Biopac_GSR']
+filtered_signal = test['Biopac_GSR']
+plot_assess_filter(unfiltered_signal, filtered_signal)
+#plt.plot(test['Biopac_GSR'][test['Condition']=='CO2'])
+#plt.plot(test['Biopac_GSR'][(test['Condition'] == 'CO2') & (test['Segment'] == 'brightness_calibration')])
+
+#%% RESPIRATION
+import matplotlib.pyplot as plt
+
+unfiltered_signal = participant_df['Biopac_RSP']
+filtered_signal = test['Biopac_RSP']
+plot_assess_filter(unfiltered_signal, filtered_signal)
+#plt.plot(test['Biopac_GSR'][test['Condition']=='CO2'])
+#plt.plot(test['Biopac_GSR'][(test['Condition'] == 'CO2') & (test['Segment'] == 'brightness_calibration')])
+
+#%% EMG_CONTACT
+import matplotlib.pyplot as plt
+
+unfiltered_signal = participant_df['Emg/Contact[CenterCorrugator]']
+filtered_signal = test['Emg/Contact[CenterCorrugator]']
+plot_assess_filter(unfiltered_signal, filtered_signal)
+#plt.plot(test['Biopac_GSR'][test['Condition']=='CO2'])
+#plt.plot(test['Biopac_GSR'][(test['Condition'] == 'CO2') & (test['Segment'] == 'brightness_calibration')])
+
+
+
+#%% feature extraction
+features = DataHandler.extract_features(participant_df)
+
+#%%
+import pandas as pd
+import numpy as np
+from utils.generate_sliding_windows import generate_sliding_windows
+
+# Assume you have a DataFrame called 'df' with the columns mentioned in your question
+df = test.copy()
+
+columns_to_calculate = ['Biopac_GSR', 'Biopac_RSP']  # Specify the columns to calculate features for
+
+windows = generate_sliding_windows(df, 5, 3)
+result = pd.DataFrame()
+for window in windows:
+    window_features = pd.DataFrame()
+    #for column in window[columns_to_calculate]:
+    for column_name, column_data in window[columns_to_calculate].iteritems(): 
+        features = calculate_statistical_features(column_data, column_name)
+        if(window_features.empty):
+            window_features = pd.DataFrame([features])
+        else:
+            window_features = pd.concat([window_features, pd.DataFrame([features])], axis=1)
+        #result = result.append(features, ignore_index=True)
+    result = pd.concat([result, window_features], ignore_index=True)
+
+
+
+#%% feature extraction
+
+import pandas as pd
+import numpy as np
+from utils.generate_sliding_windows import generate_sliding_windows
+
+# Assume you have a DataFrame called 'df' with the columns mentioned in your question
+df = test.copy()
+
+columns_to_calculate = ['Biopac_GSR', 'Biopac_RSP']  # Specify the columns to calculate features for
+
+statistical_features = []
+
+for column in columns_to_calculate:
+    windows = generate_sliding_windows(df[column], 5, 3)  # Generate sliding windows for the current column
+
+    for window in windows:
+        features = {}
+        features[column + '_Mean'] = window.mean()
+        features[column + '_Standard Deviation'] = window.std()
+        features[column + '_Maximum'] = window.max()
+        # Add more statistical features as needed
+        
+        statistical_features.append(features)
+
+# Create a dataframe from the list of dictionaries
+result_df = pd.DataFrame(statistical_features)
+
+
+#%% feature extraction
+features_test = test.copy()
+import pandas as pd
+import numpy as np
+
+# Assume you have a DataFrame called 'df' with the columns mentioned in your question
+df = test.copy()
+window_length = 5  # Length of the sliding window in seconds
+shift = 3  # Shift between consecutive windows in seconds
+
+# Convert shift and window_length to the corresponding number of rows based on the sampling frequency of the data
+sampling_frequency = 50  # Replace with your actual sampling frequency
+shift_rows = int(shift * sampling_frequency)
+window_length_rows = int(window_length * sampling_frequency)
+
+# Generate sliding windows using rolling window functionality for each column except 'Participant_No', 'Condition', 'Segment'
+columns_to_process = [col for col in df.columns if col not in ['Participant_No', 'Condition', 'Segment', 'Frame#', 'Time',
+       'Faceplate/FaceState', 'Faceplate/FitState', 'unix_timestamp', 'Event']]
+windows = df[columns_to_process].rolling(window=window_length_rows, min_periods=window_length_rows, center=False)
+
+# Extract statistical features from each window
+features = windows.agg(['mean', 'std', 'min', 'max'])  # Add additional statistical functions as needed
+
+# Reset index to represent the start time of each window
+features.reset_index(drop=True, inplace=True)
+
+# Create a DataFrame with the 'Participant_No', 'Condition', 'Segment', and 'Frame#' columns for reference
+reference_columns = df[['Participant_No', 'Condition', 'Segment', 'Frame#']]
+
+# Concatenate the reference columns with the statistical features
+output_df = pd.concat([reference_columns, features], axis=1)
+
+# Print the resulting DataFrame with statistical features
+print(output_df)
+

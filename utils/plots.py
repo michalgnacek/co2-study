@@ -184,4 +184,31 @@ def plot_participant_overview(participant_df, save_plot):
                 os.mkdir(plot_child_directory)
         plt.savefig(os.path.join(plot_child_directory, participant_df.loc[0]['Participant_No']) + '.png', dpi=300)
     plt.show()
+    
+def plot_assess_filter(unfiltered_signal, filtered_signal):
+    
+    # Create a figure with subplots
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(10, 8))
+
+    # Plot the unfiltered signal
+    ax1.plot(unfiltered_signal, label='Unfiltered')
+    ax1.set_ylabel('Signal')
+    ax1.set_xlabel('Time')
+    ax1.set_title('Unfiltered')
+
+    # Plot the filtered signal
+    ax2.plot(filtered_signal, label='Filtered')
+    ax2.set_xlabel('Time')
+    ax2.set_ylabel('Signal')
+    ax2.set_title('Filtered')
+
+    # Link the x-axis limits of the two subplots
+    ax1.get_shared_x_axes().join(ax1, ax2)
+
+
+    # Show the plot
+    plt.show()
+    
+
+
 
