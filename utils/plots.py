@@ -48,9 +48,6 @@ def plot_participant_overview(participant_df, save_plot):
     PPG_RAW_air = participant_df['Ppg/Raw.ppg'][(participant_df['Condition'] == 'AIR')]
     PPG_RAW_co2 = participant_df['Ppg/Raw.ppg'][(participant_df['Condition'] == 'CO2')]
     
-    PPG_RAW_air = participant_df['Ppg/Raw.ppg'][(participant_df['Condition'] == 'AIR')]
-    PPG_RAW_co2 = participant_df['Ppg/Raw.ppg'][(participant_df['Condition'] == 'CO2')]
-    
     EMG_C_RO_AIR = participant_df['Emg/Contact[RightOrbicularis]'][(participant_df['Condition'] == 'AIR')]
     EMG_C_RZ_AIR = participant_df['Emg/Contact[RightZygomaticus]'][(participant_df['Condition'] == 'AIR')]
     EMG_C_RF_AIR = participant_df['Emg/Contact[RightFrontalis]'][(participant_df['Condition'] == 'AIR')]
@@ -80,6 +77,22 @@ def plot_participant_overview(participant_df, save_plot):
     EMG_A_LF_CO2 = participant_df['Emg/Amplitude[LeftFrontalis]'][(participant_df['Condition'] == 'CO2')]
     EMG_A_LZ_CO2 = participant_df['Emg/Amplitude[LeftZygomaticus]'][(participant_df['Condition'] == 'CO2')]
     EMG_A_LO_CO2 = participant_df['Emg/Amplitude[LeftOrbicularis]'][(participant_df['Condition'] == 'CO2')]
+    
+    ACC_X_air = participant_df['Accelerometer/Raw.x'][(participant_df['Condition'] == 'AIR')]
+    ACC_Y_air = participant_df['Accelerometer/Raw.y'][(participant_df['Condition'] == 'AIR')]
+    ACC_Z_air = participant_df['Accelerometer/Raw.z'][(participant_df['Condition'] == 'AIR')]
+    
+    ACC_X_co2 = participant_df['Accelerometer/Raw.x'][(participant_df['Condition'] == 'CO2')]
+    ACC_Y_co2 = participant_df['Accelerometer/Raw.y'][(participant_df['Condition'] == 'CO2')]
+    ACC_Z_co2 = participant_df['Accelerometer/Raw.z'][(participant_df['Condition'] == 'CO2')]
+    
+    GYR_X_air = participant_df['Gyroscope/Raw.x'][(participant_df['Condition'] == 'AIR')]
+    GYR_Y_air = participant_df['Gyroscope/Raw.y'][(participant_df['Condition'] == 'AIR')]
+    GYR_Z_air = participant_df['Gyroscope/Raw.z'][(participant_df['Condition'] == 'AIR')]
+    
+    GYR_X_co2 = participant_df['Gyroscope/Raw.x'][(participant_df['Condition'] == 'CO2')]
+    GYR_Y_co2 = participant_df['Gyroscope/Raw.y'][(participant_df['Condition'] == 'CO2')]
+    GYR_Z_co2 = participant_df['Gyroscope/Raw.z'][(participant_df['Condition'] == 'CO2')]
    
     
     
@@ -87,7 +100,7 @@ def plot_participant_overview(participant_df, save_plot):
     # Assume condition_1 and condition_2 are strings containing the names of the conditions
     
     # Set up the figure with 2 rows and 2 columns of subplots
-    fig, axs = plt.subplots(7, 2, figsize=(10, 8))
+    fig, axs = plt.subplots(9, 2, figsize=(10, 8))
     
     # Plot GSR
     axs[0, 0].plot(GSR_air)
@@ -172,6 +185,32 @@ def plot_participant_overview(participant_df, save_plot):
     axs[6, 1].plot(EMG_A_LZ_CO2, label='Emg/Amplitude[LeftZygomaticus]')
     axs[6, 1].plot(EMG_A_LO_CO2, label='Emg/Amplitude[LeftOrbicularis]')
     axs[6, 1].set_title("EMG Amplitude - CO2")
+    
+    # Plot ACC
+    axs[7, 0].plot(ACC_X_air, label='X')
+    axs[7, 0].plot(ACC_Y_air, label='Y')
+    axs[7, 0].plot(ACC_Z_air, label='Z')
+    axs[7, 0].set_title("Acc - AIR")
+    axs[7, 0].legend()
+    
+    axs[7, 1].plot(ACC_X_co2, label='X')
+    axs[7, 1].plot(ACC_Y_co2, label='Y')
+    axs[7, 1].plot(ACC_Z_co2, label='Z')
+    axs[7, 1].set_title("Acc - CO2")
+    axs[7, 1].legend()
+    
+    # Plot GYR
+    axs[8, 0].plot(GYR_X_air, label='X')
+    axs[8, 0].plot(GYR_Y_air, label='Y')
+    axs[8, 0].plot(GYR_Z_air, label='Z')
+    axs[8, 0].set_title("Gyr - AIR")
+    axs[8, 0].legend()
+    
+    axs[8, 1].plot(GYR_X_co2, label='X')
+    axs[8, 1].plot(GYR_Y_co2, label='Y')
+    axs[8, 1].plot(GYR_Z_co2, label='Z')
+    axs[8, 1].set_title("Gyr - CO2")
+    axs[8, 1].legend()
 
     fig.tight_layout()
     plt.suptitle('Participant: ' + participant_df.loc[0]['Participant_No'])

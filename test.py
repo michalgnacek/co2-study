@@ -112,12 +112,12 @@ plt.show()
 
 #%%
 from classes.DataHandler import DataHandler
-df = pd.read_csv(r'D:\co2-study\temp\synced_participant_data\4_raff.csv')
+df = pd.read_csv(r'D:\co2-study\temp\synced_participant_data\63_reuben_moerman.csv')
 normalised_data = DataHandler.normalise_data(df)
 #%%
 import matplotlib.pyplot as plt
 
-plot_participant_overview(normalised_data, True)
+plot_participant_overview(normalised_data, False)
 #%%
 from utils.timestamps import read_unix, j2000_to_unix
 
