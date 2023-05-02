@@ -248,6 +248,17 @@ def plot_assess_filter(unfiltered_signal, filtered_signal):
     # Show the plot
     plt.show()
     
+def plot_assess_filter2(unfiltered_signal, filtered_signal):
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(unfiltered_signal, label='Original Signal')
+    plt.plot(filtered_signal, label='Filtered Signal')
+    plt.xlabel('Time')
+    plt.ylabel('Amplitude')
+    plt.title('Butterworth Low-pass Filter')
+    plt.legend()
+    plt.show()
+    
 
 
 

@@ -61,4 +61,25 @@ NORMALISATION_COLUMNS = [
        'VerboseData.Right.PupilDiameterMm', 'VerboseData.Left.PupilDiameterMm', 
        'Biopac_GSR', 'Biopac_RSP']
 
+FEATURE_EXTRACTION_COLUMNS = [
+       'Emg/Contact[RightOrbicularis]',
+       'Emg/Filtered[RightOrbicularis]', 'Emg/Amplitude[RightOrbicularis]',
+       'Emg/Contact[RightZygomaticus]',
+       'Emg/Filtered[RightZygomaticus]', 'Emg/Amplitude[RightZygomaticus]',
+       'Emg/Contact[RightFrontalis]',
+       'Emg/Filtered[RightFrontalis]', 'Emg/Amplitude[RightFrontalis]',
+       'Emg/Contact[CenterCorrugator]',
+       'Emg/Filtered[CenterCorrugator]', 'Emg/Amplitude[CenterCorrugator]',
+       'Emg/Contact[LeftFrontalis]',
+       'Emg/Filtered[LeftFrontalis]', 'Emg/Amplitude[LeftFrontalis]',
+       'Emg/Contact[LeftZygomaticus]',
+       'Emg/Filtered[LeftZygomaticus]', 'Emg/Amplitude[LeftZygomaticus]',
+       'Emg/Contact[LeftOrbicularis]',
+       'Emg/Filtered[LeftOrbicularis]', 'Emg/Amplitude[LeftOrbicularis]',
+       'HeartRate/Average', 'Ppg/Raw.ppg',
+       'Accelerometer/Raw.x', 'Accelerometer/Raw.y', 'Accelerometer/Raw.z',
+       'Gyroscope/Raw.x', 'Gyroscope/Raw.y', 'Gyroscope/Raw.z',
+       'VerboseData.Right.PupilDiameterMm', 'VerboseData.Left.PupilDiameterMm', 
+       'Biopac_GSR', 'Biopac_RSP']
+
 EVENTS_TO_IGNORE = ['Starting Condition 1 Recording', 'Finished Condition 1 Recording', 'Condition 1 Completed', 'Condition 1 Scene']

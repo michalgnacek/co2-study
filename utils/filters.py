@@ -57,20 +57,21 @@ def filter_pupil_size2(ps_df):
     
     return filtered_data
 
-def butter_lowpass_filter(signal, cutoff, fs, order):
+def butter_lowpass_filter(data, cutoff_freq, sampling_freq, order=3):
     # Normalize the cutoff frequency
-    #normalized_cutoff = cutoff / (0.5 * fs)
+    nyquist_freq = 0.5 * sampling_freq
+    normalized_cutoff = cutoff_freq / nyquist_freq
 
-    # Design the Butterworth filter
-    b, a = butter(order, cutoff, btype='low', analog=True, output='ba')
+    # Generate the Butterworth filter coefficients
+    b, a = butter(order, normalized_cutoff, btype='low', analog=False, output='ba')
 
-    # Apply zero-phase forward-backward filtering
-    filtered_signal = filtfilt(b, a, signal)
+    # Apply the filter to the data
+    filtered_data = filtfilt(b, a, data)
 
-    return filtered_signal
+    return filtered_data
 
 def filter_pupil_size(participant_df):
-    cut_off = 0.1
+    cut_off = 4
     fs = 50
     order = 3
     
@@ -132,9 +133,9 @@ def filter_biopac_gsr(participant_df):
     return participant_df
 
 def filter_biopac_respiration(participant_df):    
-    cut_off = 0.3
+    cut_off = 0.5
     fs = 50
-    order = 3
+    order = 4
     
     respiration_air_data = participant_df['Biopac_RSP'][participant_df['Condition']=='AIR']
     respiration_air_data = respiration_air_data[respiration_air_data.notna()]
@@ -151,7 +152,7 @@ def filter_biopac_respiration(participant_df):
     return participant_df
 
 def filter_ppg(participant_df):    
-    cut_off = 0.3
+    cut_off = 3
     fs = 50
     order = 3
     
@@ -187,6 +188,92 @@ def filter_contact(participant_df):
         filtered_emg_contact_data_co2 = pd.DataFrame(data=filtered_array_co2, columns=[emg_contact_column], index=emg_contact_data_co2.index)
         participant_df.update(filtered_emg_contact_data_co2)
         
+    return participant_df
+
+def filter_acc(participant_df):    
+    cut_off = 5
+    fs = 50
+    order = 3
+    
+    acc_air_data_x = participant_df['Accelerometer/Raw.x'][participant_df['Condition'] == 'AIR']
+    acc_air_data_x = acc_air_data_x[acc_air_data_x.notna()]
+    filtered_arrax_air_x = butter_lowpass_filter(acc_air_data_x, cut_off, fs, order)
+    filtered_acc_data_air_x = pd.DataFrame(data=filtered_arrax_air_x, columns=['Accelerometer/Raw.x'], index=acc_air_data_x.index)
+    participant_df.update(filtered_acc_data_air_x)
+
+    acc_air_data_y = participant_df['Accelerometer/Raw.y'][participant_df['Condition'] == 'AIR']
+    acc_air_data_y = acc_air_data_y[acc_air_data_y.notna()]
+    filtered_array_air_y = butter_lowpass_filter(acc_air_data_y, cut_off, fs, order)
+    filtered_acc_data_air_y = pd.DataFrame(data=filtered_array_air_y, columns=['Accelerometer/Raw.y'], index=acc_air_data_y.index)
+    participant_df.update(filtered_acc_data_air_y)
+    
+    acc_air_data_z = participant_df['Accelerometer/Raw.z'][participant_df['Condition'] == 'AIR']
+    acc_air_data_z = acc_air_data_z[acc_air_data_z.notna()]
+    filtered_array_air_z = butter_lowpass_filter(acc_air_data_z, cut_off, fs, order)
+    filtered_acc_data_air_z = pd.DataFrame(data=filtered_array_air_z, columns=['Accelerometer/Raw.z'], index=acc_air_data_z.index)
+    participant_df.update(filtered_acc_data_air_z)
+    
+    acc_co2_data_x = participant_df['Accelerometer/Raw.x'][participant_df['Condition'] == 'CO2']
+    acc_co2_data_x = acc_co2_data_x[acc_co2_data_x.notna()]
+    filtered_arrax_co2_x = butter_lowpass_filter(acc_co2_data_x, cut_off, fs, order)
+    filtered_acc_data_co2_x = pd.DataFrame(data=filtered_arrax_co2_x, columns=['Accelerometer/Raw.x'], index=acc_co2_data_x.index)
+    participant_df.update(filtered_acc_data_co2_x)
+    
+    acc_co2_data_y = participant_df['Accelerometer/Raw.y'][participant_df['Condition'] == 'CO2']
+    acc_co2_data_y = acc_co2_data_y[acc_co2_data_y.notna()]
+    filtered_array_co2_y = butter_lowpass_filter(acc_co2_data_y, cut_off, fs, order)
+    filtered_acc_data_co2_y = pd.DataFrame(data=filtered_array_co2_y, columns=['Accelerometer/Raw.y'], index=acc_co2_data_y.index)
+    participant_df.update(filtered_acc_data_co2_y)
+    
+    acc_co2_data_z = participant_df['Accelerometer/Raw.z'][participant_df['Condition'] == 'CO2']
+    acc_co2_data_z = acc_co2_data_z[acc_co2_data_z.notna()]
+    filtered_array_co2_z = butter_lowpass_filter(acc_co2_data_z, cut_off, fs, order)
+    filtered_acc_data_co2_z = pd.DataFrame(data=filtered_array_co2_z, columns=['Accelerometer/Raw.z'], index=acc_co2_data_z.index)
+    participant_df.update(filtered_acc_data_co2_z)
+
+    return participant_df
+
+def filter_gyr(participant_df):    
+    cut_off = 5
+    fs = 50
+    order = 3
+    
+    gyr_air_data_x = participant_df['Gyroscope/Raw.x'][participant_df['Condition'] == 'AIR']
+    gyr_air_data_x = gyr_air_data_x[gyr_air_data_x.notna()]
+    filtered_arrax_air_x = butter_lowpass_filter(gyr_air_data_x, cut_off, fs, order)
+    filtered_gyr_data_air_x = pd.DataFrame(data=filtered_arrax_air_x, columns=['Gyroscope/Raw.x'], index=gyr_air_data_x.index)
+    participant_df.update(filtered_gyr_data_air_x)
+
+    gyr_air_data_y = participant_df['Gyroscope/Raw.y'][participant_df['Condition'] == 'AIR']
+    gyr_air_data_y = gyr_air_data_y[gyr_air_data_y.notna()]
+    filtered_array_air_y = butter_lowpass_filter(gyr_air_data_y, cut_off, fs, order)
+    filtered_gyr_data_air_y = pd.DataFrame(data=filtered_array_air_y, columns=['Gyroscope/Raw.y'], index=gyr_air_data_y.index)
+    participant_df.update(filtered_gyr_data_air_y)
+    
+    gyr_air_data_z = participant_df['Gyroscope/Raw.z'][participant_df['Condition'] == 'AIR']
+    gyr_air_data_z = gyr_air_data_z[gyr_air_data_z.notna()]
+    filtered_array_air_z = butter_lowpass_filter(gyr_air_data_z, cut_off, fs, order)
+    filtered_gyr_data_air_z = pd.DataFrame(data=filtered_array_air_z, columns=['Gyroscope/Raw.z'], index=gyr_air_data_z.index)
+    participant_df.update(filtered_gyr_data_air_z)
+    
+    gyr_co2_data_x = participant_df['Gyroscope/Raw.x'][participant_df['Condition'] == 'CO2']
+    gyr_co2_data_x = gyr_co2_data_x[gyr_co2_data_x.notna()]
+    filtered_arrax_co2_x = butter_lowpass_filter(gyr_co2_data_x, cut_off, fs, order)
+    filtered_gyr_data_co2_x = pd.DataFrame(data=filtered_arrax_co2_x, columns=['Gyroscope/Raw.x'], index=gyr_co2_data_x.index)
+    participant_df.update(filtered_gyr_data_co2_x)
+    
+    gyr_co2_data_y = participant_df['Gyroscope/Raw.y'][participant_df['Condition'] == 'CO2']
+    gyr_co2_data_y = gyr_co2_data_y[gyr_co2_data_y.notna()]
+    filtered_array_co2_y = butter_lowpass_filter(gyr_co2_data_y, cut_off, fs, order)
+    filtered_gyr_data_co2_y = pd.DataFrame(data=filtered_array_co2_y, columns=['Gyroscope/Raw.y'], index=gyr_co2_data_y.index)
+    participant_df.update(filtered_gyr_data_co2_y)
+    
+    gyr_co2_data_z = participant_df['Gyroscope/Raw.z'][participant_df['Condition'] == 'CO2']
+    gyr_co2_data_z = gyr_co2_data_z[gyr_co2_data_z.notna()]
+    filtered_array_co2_z = butter_lowpass_filter(gyr_co2_data_z, cut_off, fs, order)
+    filtered_gyr_data_co2_z = pd.DataFrame(data=filtered_array_co2_z, columns=['Gyroscope/Raw.z'], index=gyr_co2_data_z.index)
+    participant_df.update(filtered_gyr_data_co2_z)
+
     return participant_df
 
     

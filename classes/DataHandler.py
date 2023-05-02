@@ -162,29 +162,8 @@ class DataHandler:
         df_downsampled.to_csv(processed_participant_file + '.csv', index=False)
         return df_downsampled
 
-    
-    def normalise_data_old(expression_calibration_data, brightness_calibration_data, condition_data, complete_synced_data):
-        normalised_data = complete_synced_data
-        #TODO: Normalise Left pupul size
-        left_eye_min_max_scaler = MinMaxScaler()
-        left_eye_min_max_scaler.fit([brightness_calibration_data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value]])
-        normalised_data[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value] = left_eye_min_max_scaler.transform(constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value)
-        #TODO: Normalise Right pupul size
-        right_eye_min_max_scaler = MinMaxScaler()
-        right_eye_min_max_scaler.fit([brightness_calibration_data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value]])
-        normalised_data[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value] = right_eye_min_max_scaler.transform(constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value)
-        
-        print(normalised_data[[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value, constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value]])
-        #TODO: Normalise GSR data
-        #TODO: Normalise Breathing Rate data
-        #TODO: Normalise EyeTracking data
-        #TODO: EMG Amplitude data
-        #TODO: EMG Contact data
-        #TODO: EMG Filtered data
-        #TODO: Normalise PPG data?
-        return normalised_data[[constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value, constants.DATA_COLUMNS.EYE_RIGHT_PUPIL_SIZE.value]]
-    
-    def normalise_data(participant_df):
+    def normalise_data_old(participant_df):
+        # This normalises data for each participant for each condition
         data_to_normalise = participant_df.copy()
         #Remove data before calibration and after condition ended
         data_to_normalise = data_to_normalise[data_to_normalise['Segment'].notna()].reset_index(drop=True)
@@ -205,6 +184,29 @@ class DataHandler:
                 
                 normalised_data[col_name][air_data.index[0]:air_data.index[len(normalised_air_data)-1]+1] = normalised_air_data.reshape(-1)
                 normalised_data[col_name][co2_data.index[0]:co2_data.index[len(normalised_co2_data)-1]+1] = normalised_co2_data.reshape(-1)
+                
+        #Check that all segments and condition labels are prescent and that GSR and Eye tracking have been synced
+        if (len(normalised_data['Condition'].unique())!=2):
+            print('!!!Condition missing')
+        if (len(normalised_data['Segment'][normalised_data['Condition']=='AIR'].unique())!=3):
+            print('!!!Air segment missing')
+        if (len(normalised_data['Segment'][normalised_data['Condition']=='CO2'].unique())!=3):
+            print('!!!CO2 segment missing')
+        return normalised_data
+    
+    def normalise_data(participant_df):
+        data_to_normalise = participant_df.copy()
+        #Remove data before calibration and after condition ended
+        data_to_normalise = data_to_normalise[data_to_normalise['Segment'].notna()].reset_index(drop=True)
+        normalised_data = data_to_normalise.copy()
+        
+        for col_name, col_data in data_to_normalise.iteritems():
+            #if column needs to be normalised
+            if(col_name in constants.NORMALISATION_COLUMNS):
+                normalised_data[col_name] = min_max_normalisation(col_data)
+                
+                #normalised_data[col_name][air_data.index[0]:air_data.index[len(normalised_air_data)-1]+1] = normalised_air_data.reshape(-1)
+                #normalised_data[col_name][co2_data.index[0]:co2_data.index[len(normalised_co2_data)-1]+1] = normalised_co2_data.reshape(-1)
                 
         #Check that all segments and condition labels are prescent and that GSR and Eye tracking have been synced
         if (len(normalised_data['Condition'].unique())!=2):
@@ -246,6 +248,8 @@ class DataHandler:
         filtered_data = filters.filter_biopac_respiration(filtered_data)
         filtered_data = filters.filter_ppg(filtered_data)
         filtered_data = filters.filter_contact(filtered_data)
+        filtered_data = filters.filter_acc(filtered_data)
+        filtered_data = filters.filter_gyr(filtered_data)
         
         return filtered_data
     
@@ -269,7 +273,8 @@ class DataHandler:
             df = participant_df.copy()
             df = df[~df['Segment'].isna()].reset_index(drop=True)
     
-            columns_to_calculate = ['Biopac_GSR', 'Biopac_RSP']  # Specify the columns to calculate features for
+            #columns_to_calculate = ['Biopac_GSR', 'Biopac_RSP']  # Specify the columns to calculate features for
+            columns_to_calculate = constants.FEATURE_EXTRACTION_COLUMNS
             result = pd.DataFrame()
             
             for condition in df['Condition'].unique():
