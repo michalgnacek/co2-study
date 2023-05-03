@@ -57,6 +57,13 @@ def impute_eye_data(eye_df):
     data = pd.read_csv(eye_df)
     if(not data.empty):
         data = data.drop(index=range(10)).reset_index(drop=True)
+        # if only one of the pupil sizes is -1, use the other one
+        
+        mask = (data['VerboseData.Right.PupilDiameterMm'] == -1) & (data['VerboseData.Left.PupilDiameterMm'] != -1)
+        data['VerboseData.Right.PupilDiameterMm'] = np.where(mask, data['VerboseData.Left.PupilDiameterMm'], data['VerboseData.Right.PupilDiameterMm'])
+        
+        mask = (data['VerboseData.Left.PupilDiameterMm'] == -1) & (data['VerboseData.Right.PupilDiameterMm'] != -1)
+        data['VerboseData.Left.PupilDiameterMm'] = np.where(mask, data['VerboseData.Right.PupilDiameterMm'], data['VerboseData.Left.PupilDiameterMm'])
         
         # Mark pupil sizes outside pre-defined range as invalid for imputing
         conditions = ((data['VerboseData.Right.PupilDiameterMm'] < 1.5) |

@@ -26,26 +26,29 @@ CO2_DATA_DIRECTORY = r"D:\OneDrive - Bournemouth University\Studies\CO2 study\wo
 
 #%%
 from classes.DataHandler import DataHandler
-air_mask_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\air\\2022-08-15T12-10-29.csv'
-air_event_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\air\\2022-08-15T12-10-29.json'
-air_eyetracking_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\air\\2022-08-15 121405.eyedata.csv'
-air_biopac_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\air\\air.txt'
-air_biopac_start_unix = 1660561855.0
+air_mask_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\28_atul_singh\\air\\2022-09-04T19-10-25.csv'
+air_event_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\28_atul_singh\\air\\2022-09-04T19-10-25.json'
+air_eyetracking_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\28_atul_singh\\air\\2022-09-04 191406.eyedata.csv'
+air_biopac_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\28_atul_singh\\air\\air.txt'
+air_biopac_start_unix = 1662315007.0
 
-air_mask_data = DataHandler.load_mask_data(air_mask_file, air_event_file, '10_benjamin')
-air_eye_data = DataHandler.load_eyetracking_data(air_eyetracking_file, '10_benjamin', 'air')
-air_biopac_data = DataHandler.load_biopac_data(air_biopac_file, air_biopac_start_unix, '10_benjamin')
+air_mask_data = DataHandler.load_mask_data(air_mask_file, air_event_file, '28_atul_singh')
+air_eye_data = DataHandler.load_eyetracking_data(air_eyetracking_file, '28_atul_singh', 'air')
+air_biopac_data = DataHandler.load_biopac_data(air_biopac_file, air_biopac_start_unix, '28_atul_singh')
 
-co2_mask_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\co2\\2022-08-15T12-58-30.csv'
-co2_event_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\co2\\2022-08-15T12-58-30.json'
-co2_eyetracking_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\co2\\2022-08-15 130129.eyedata.csv'
-co2_biopac_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\10_benjamin\\co2\\co2.txt'
-co2_biopac_start_unix = 1660564699.0
+co2_mask_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\28_atul_singh\\co2\\2022-09-04T19-57-08.csv'
+co2_event_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\28_atul_singh\\co2\\2022-09-04T19-57-08.json'
+co2_eyetracking_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\28_atul_singh\\co2\\2022-09-04 200014.eyedata.csv'
+co2_biopac_file = 'D:\\OneDrive - Bournemouth University\\Studies\\CO2 study\\working_data\\28_atul_singh\\co2\\co2.txt'
+co2_biopac_start_unix = 1662317813.0
 
-co2_mask_data = DataHandler.load_mask_data(co2_mask_file, co2_event_file, '10_benjamin')
-co2_eye_data = DataHandler.load_eyetracking_data(co2_eyetracking_file, '10_benjamin', 'co2')
-co2_biopac_data = DataHandler.load_biopac_data(co2_biopac_file, co2_biopac_start_unix, '10_benjamin')
+co2_mask_data = DataHandler.load_mask_data(co2_mask_file, co2_event_file, '28_atul_singh')
+co2_eye_data = DataHandler.load_eyetracking_data(co2_eyetracking_file, '28_atul_singh', 'co2')
+co2_biopac_data = DataHandler.load_biopac_data(co2_biopac_file, co2_biopac_start_unix, '28_atul_singh')
 
+#%%
+co2_eye_data = DataHandler.load_eyetracking_data(co2_eyetracking_file, '28_atul_singh', 'co2')
+#air_synced_data = DataHandler.sync_signal_data(air_mask_data, air_eye_data, air_biopac_data, air_biopac_start_unix))
 
 #%% LOAD SYNCED PARTICIAPNT DF
 synced_participant_file = 'D:\\co2-study\\temp\\synced_participant_data\\63_reuben_moerman.csv'
