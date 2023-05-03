@@ -282,7 +282,7 @@ class DataHandler:
                 for segment in df['Segment'].unique():
                     segment_df = condition_df[condition_df['Segment']==segment]
     
-                    windows = generate_sliding_windows(segment_df, 5, 3)
+                    windows = generate_sliding_windows(segment_df, 60, 10)
                     segment_result = pd.DataFrame()
                     for window in windows:
                         window_features = pd.DataFrame()
