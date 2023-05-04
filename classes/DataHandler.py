@@ -303,6 +303,44 @@ class DataHandler:
             print('Features file found. Loading features file for participant: ' + str(participant_number))
             return  pd.read_csv(participant_features_file, index_col=0)
     
+    def merge_participant_feature_files():
+        participant_feature_directory = os.path.join(os.getcwd(), 'temp', 'features')
+        
+        feature_files = []
+        for file_name in os.listdir(participant_feature_directory):
+            if file_name.endswith('.csv') and os.path.isfile(os.path.join(participant_feature_directory, file_name)):
+                feature_files.append(file_name)
+
+        feature_files = sorted(feature_files, key=lambda file_name: int(file_name.split('_')[0]))        
+        
+        combined_feature_file = pd.DataFrame()
+        for feature_file in feature_files:
+            participant_feature_file = pd.read_csv(os.path.join(participant_feature_directory, feature_file), index_col=0)
+            participant_feature_file.insert(0, "participant_number", feature_file.split('.', 1)[0])
+            combined_feature_file = pd.concat([combined_feature_file, participant_feature_file])
+        combined_feature_file = combined_feature_file.reset_index(drop=True)
+        combined_feature_file.to_csv(os.path.join(os.getcwd(), 'temp', 'features.csv'))
+        return combined_feature_file
+    
+    def merge_participant_data_files():
+        participant_feature_directory = os.path.join(os.getcwd(), 'temp', 'synced_participant_data')
+        
+        feature_files = []
+        for file_name in os.listdir(participant_feature_directory):
+            if file_name.endswith('.csv') and os.path.isfile(os.path.join(participant_feature_directory, file_name)):
+                feature_files.append(file_name)
+
+        feature_files = sorted(feature_files, key=lambda file_name: int(file_name.split('_')[0]))        
+        
+        combined_feature_file = pd.DataFrame()
+        for feature_file in feature_files:
+            print(feature_file)
+            participant_feature_file = pd.read_csv(os.path.join(participant_feature_directory, feature_file), index_col=0)
+            #participant_feature_file.insert(0, "participant_number", feature_file.split('.', 1)[0])
+            combined_feature_file = pd.concat([combined_feature_file, participant_feature_file])
+        combined_feature_file = combined_feature_file.reset_index(drop=True)
+        combined_feature_file.to_csv(os.path.join(os.getcwd(), 'temp', 'combined_data.csv'))
+        return combined_feature_file
     
 
 

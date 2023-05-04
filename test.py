@@ -124,9 +124,15 @@ plot_assess_filter2(unfiltered_signal, filtered_signal)
 features = DataHandler.extract_features(participant_df)
 
 #%%
-synced_participant_file = 'D:\\co2-study\\temp\\synced_participant_data\\7_aliaksei.csv'
+synced_participant_file = 'D:\\co2-study\\temp\\synced_participant_data\\52_thomas_charnock.csv'
 #features_file = 'D:\\co2-study\\temp\\features\\7_aliaksei.csv'
 participant_df = pd.read_csv(synced_participant_file)
 #features = pd.read_csv(features_file,index_col=False)
 #condition_features = features[features['Segment']=='gas_inhalation']
 #condition_features.to_csv('D:\\co2-study\\temp\\test.csv')
+
+#%%
+DataHandler.merge_participant_feature_files()
+
+#%%
+DataHandler.merge_participant_data_files()

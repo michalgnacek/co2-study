@@ -95,12 +95,19 @@ def calculate_statistical_features(window, column_name):
     features[column_name + '_max'] = np.max(window)
     features[column_name + '_median'] = np.median(window)
     
+    # Not a valid dispersion metric since data is normalised between 0 and 1
     # Calculate maximum and minimum ratio
-    max_value = np.max(window)
-    min_value = np.min(window)
-    features[column_name + '_max_ratio'] = max_value / np.abs(min_value)
-    features[column_name + '_min_ratio'] = min_value / np.abs(max_value)
+    #max_value = np.max(window)
+    #min_value = np.min(window)
+    #features[column_name + '_max_ratio'] = max_value / np.abs(min_value)
+    #features[column_name + '_min_ratio'] = min_value / np.abs(max_value)
     
+    # Calculate the range
+    features[column_name + '_range'] = window.max() - window.min()
+    
+    # Calculate the interquartile range (IQR) of the GSR data
+    features[column_name + '_iqr'] = window.quantile(0.75) - window.quantile(0.25)
+
     # Calculate first and second derivatives
     first_derivative = np.gradient(window)
     second_derivative = np.gradient(first_derivative)
