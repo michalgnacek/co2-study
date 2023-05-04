@@ -7,22 +7,18 @@ Created on Mon Apr 10 15:20:15 2023
 
 import neurokit2 as nk
 import numpy as np
+import pandas as pd
 
 def calculate_hrv_features(df_ppg, sampling_frequency):
     """
     Receives a dataframe with ppg data and returns
     time-domain features.
     """
-    exclude_hr_range = False
+    SUBSET_FEATURES = ["PPG_Rate_Mean","HRV_MeanNN","HRV_SDNN","HRV_RMSSD","HRV_SDSD","HRV_MedianNN", "HRV_IQRNN"]
+    exclude_hr_range = True
     
     signals, info = nk.ppg_process(df_ppg, sampling_rate=sampling_frequency)
     
-    ppg_features = nk.ppg_analyze(signals, sampling_rate=50)
-
-    # HRV features from neurokit2 that should be forwarded for final dataset
-    SUBSET_FEATURES = ["PPG_Rate_Mean","HRV_MeanNN","HRV_SDNN","HRV_RMSSD","HRV_SDSD","HRV_MedianNN", "HRV_IQRNN"]
-    ppg_features = ppg_features[ SUBSET_FEATURES ]
-        
     if(exclude_hr_range):
         # Get values for actual peaks
         ppg_peaks = signals[signals['PPG_Peaks']==1]
@@ -37,9 +33,16 @@ def calculate_hrv_features(df_ppg, sampling_frequency):
                 # estimate BPM with the time between peaks
                 estimated_hr = 60/time_between_peaks
                 # check if BPM estimation falls outside the 40 to 120 bpm range
-                if ((estimated_hr < 40) or (estimated_hr > 120)):
-                    ppg_features[ppg_features.columns] = -1
-                    break
+                if ((estimated_hr < 40) or (estimated_hr > 200)):
+                    return pd.DataFrame(np.nan, index=[0], columns=SUBSET_FEATURES)
+                    #ppg_features[ppg_features.columns] = np.nan
+                    #break
+    
+    ppg_features = nk.ppg_analyze(signals, sampling_rate=50)
+
+    # HRV features from neurokit2 that should be forwarded for final dataset
+
+    ppg_features = ppg_features[ SUBSET_FEATURES ]
 
     return ppg_features
 
@@ -48,26 +51,31 @@ def calculate_rsp_features(df_rsp, sampling_frequency):
     Receives a dataframe with biopac rsp data and returns
     time-domain features.
     """
+    SUBSET_FEATURES = ['RSP_Rate_Mean', 'RSP_Amplitude_Mean', 'RSP_Phase_Duration_Ratio']
+    
     if(df_rsp.isna().any()):
-        return np.nan
+        return pd.DataFrame(np.nan, index=[0], columns=SUBSET_FEATURES)
     else:
         signals, info = nk.rsp_process(df_rsp, sampling_rate=sampling_frequency)
-        
-        rsp_features = nk.rsp_analyze(signals, sampling_rate=50)
-
-        # HRV features from neurokit2 that should be forwarded for final dataset
-        SUBSET_FEATURES = ['RSP_Rate_Mean', 'RSP_Amplitude_Mean', 'RSP_Phase_Duration_Ratio']
-        rsp_features = rsp_features[ SUBSET_FEATURES ]
-        
-        return rsp_features
+        peaks = signals[signals['RSP_Peaks']==1]
+        if (len(peaks)<4):
+            return pd.DataFrame(np.nan, index=[0], columns=SUBSET_FEATURES)
+        else:
+            rsp_features = nk.rsp_analyze(signals, sampling_rate=50)
+    
+            # HRV features from neurokit2 that should be forwarded for final dataset
+            rsp_features = rsp_features[ SUBSET_FEATURES ]
+            
+            return rsp_features
 
 def calculate_gsr_features(df_gsr, sampling_frequency):
     """
     Receives a dataframe with biopac gsr data and returns
     time-domain features.
     """
+    SUBSET_FEATURES = ['SCR_Peaks_N', 'SCR_Peaks_Amplitude_Mean']
     if(df_gsr.isna().any()):
-        return np.nan
+        return pd.DataFrame(np.nan, index=[0], columns=SUBSET_FEATURES)
     else:
         signals, info = nk.eda_process(df_gsr, sampling_rate=sampling_frequency)
         
