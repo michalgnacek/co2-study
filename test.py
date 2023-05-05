@@ -148,7 +148,7 @@ signal_file = 'D:\\co2-study\\temp\\combined_data.csv'
 signals = pd.read_csv(signal_file)
 
 #%%
-synced_participant_file = pd.read_csv('D:\\co2-study\\temp\\synced_participant_data\\52_thomas_charnock.csv')
+synced_participant_file = pd.read_csv('D:\\co2-study\\temp\\synced_participant_data\\2_john.csv')
 
 #%%
 test = DataHandler.extract_features_entire_condition(synced_participant_file)
@@ -241,3 +241,14 @@ plt.ylabel('Mean Heart Rate')
 
 # Display the plot
 plt.show()
+
+#%%
+# File containing features for entire segments
+segment_features_file = 'D:\\co2-study\\temp\\segment_features.csv'
+segment_features = pd.read_csv(segment_features_file, index_col=0)
+
+# File containing features for windows of data
+windowed_features_file = 'D:\\co2-study\\temp\\windowed_features.csv'
+windowed_features = pd.read_csv(windowed_features_file, index_col=0)
+#%%
+filtered_data = features[(features['Condition'].isin(['AIR', 'CO2'])) & (features['Segment'] == 'gas_inhalation')]

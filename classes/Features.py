@@ -52,8 +52,8 @@ def calculate_rsp_features(df_rsp, sampling_frequency):
     time-domain features.
     """
     SUBSET_FEATURES = ['RSP_Rate_Mean', 'RSP_Amplitude_Mean', 'RSP_Phase_Duration_Ratio']
-    
-    if(df_rsp.isna().any()):
+    df_rsp.dropna(inplace=True)
+    if(df_rsp.empty):
         return pd.DataFrame(np.nan, index=[0], columns=SUBSET_FEATURES)
     else:
         signals, info = nk.rsp_process(df_rsp, sampling_rate=sampling_frequency)
@@ -74,6 +74,9 @@ def calculate_gsr_features(df_gsr, sampling_frequency):
     time-domain features.
     """
     SUBSET_FEATURES = ['SCR_Peaks_N', 'SCR_Peaks_Amplitude_Mean']
+    df_gsr.dropna(inplace=True)
+    if(df_gsr.empty):
+        return pd.DataFrame(np.nan, index=[0], columns=SUBSET_FEATURES)
     if(df_gsr.isna().any()):
         return pd.DataFrame(np.nan, index=[0], columns=SUBSET_FEATURES)
     else:
