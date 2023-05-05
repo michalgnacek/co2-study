@@ -255,7 +255,7 @@ class DataHandler:
     
     def extract_features(participant_df):
         
-        features_directory = os.path.join(os.getcwd(), 'temp', 'features')
+        features_directory = os.path.join(os.getcwd(), 'temp', 'windowed_features')
         participant_number = participant_df['Participant_No'].unique()
         
         if(len(participant_number)!=1):
@@ -303,8 +303,8 @@ class DataHandler:
             print('Features file found. Loading features file for participant: ' + str(participant_number))
             return  pd.read_csv(participant_features_file, index_col=0)
     
-    def merge_participant_feature_files():
-        participant_feature_directory = os.path.join(os.getcwd(), 'temp', 'features')
+    def merge_participant_windowed_feature_files():
+        participant_feature_directory = os.path.join(os.getcwd(), 'temp', 'windowed_features')
         
         feature_files = []
         for file_name in os.listdir(participant_feature_directory):
@@ -319,7 +319,26 @@ class DataHandler:
             participant_feature_file.insert(0, "participant_number", feature_file.split('.', 1)[0])
             combined_feature_file = pd.concat([combined_feature_file, participant_feature_file])
         combined_feature_file = combined_feature_file.reset_index(drop=True)
-        combined_feature_file.to_csv(os.path.join(os.getcwd(), 'temp', 'features.csv'))
+        combined_feature_file.to_csv(os.path.join(os.getcwd(), 'temp', 'windowed_features.csv'))
+        return combined_feature_file
+    
+    def merge_participant_segment_feature_files():
+        participant_feature_directory = os.path.join(os.getcwd(), 'temp', 'segment_features')
+        
+        feature_files = []
+        for file_name in os.listdir(participant_feature_directory):
+            if file_name.endswith('.csv') and os.path.isfile(os.path.join(participant_feature_directory, file_name)):
+                feature_files.append(file_name)
+
+        feature_files = sorted(feature_files, key=lambda file_name: int(file_name.split('_')[0]))        
+        
+        combined_feature_file = pd.DataFrame()
+        for feature_file in feature_files:
+            participant_feature_file = pd.read_csv(os.path.join(participant_feature_directory, feature_file), index_col=0)
+            participant_feature_file.insert(0, "participant_number", feature_file.split('.', 1)[0])
+            combined_feature_file = pd.concat([combined_feature_file, participant_feature_file])
+        combined_feature_file = combined_feature_file.reset_index(drop=True)
+        combined_feature_file.to_csv(os.path.join(os.getcwd(), 'temp', 'segment_features.csv'))
         return combined_feature_file
     
     def merge_participant_data_files():
@@ -341,6 +360,53 @@ class DataHandler:
         combined_feature_file = combined_feature_file.reset_index(drop=True)
         combined_feature_file.to_csv(os.path.join(os.getcwd(), 'temp', 'combined_data.csv'))
         return combined_feature_file
+    
+    def extract_features_entire_condition(participant_df):
+        
+        features_directory = os.path.join(os.getcwd(), 'temp', 'segment_features')
+        participant_number = participant_df['Participant_No'].unique()
+        
+        if(len(participant_number)!=1):
+            print('Invalid participant file')
+            return np.nan
+        else:
+            participant_number = participant_number[0]
+        
+        if (not os.path.exists(features_directory)):
+            os.mkdir(features_directory)
+        participant_features_file = os.path.join(features_directory, participant_number + '.csv')
+        if (not os.path.exists(participant_features_file)):
+        
+            print('Extracting features for participant: ' + str(participant_number))
+            df = participant_df.copy()
+            df = df[~df['Segment'].isna()].reset_index(drop=True)
+    
+            #columns_to_calculate = ['Biopac_GSR', 'Biopac_RSP']  # Specify the columns to calculate features for
+            columns_to_calculate = constants.FEATURE_EXTRACTION_COLUMNS
+            result = pd.DataFrame()
+            
+            for condition in df['Condition'].unique():
+                condition_df = df[df['Condition']==condition]
+                for segment in df['Segment'].unique():
+                    segment_df = condition_df[condition_df['Segment']==segment]
+    
+                    segment_result = pd.DataFrame()
+                    for column_name, column_data in segment_df[columns_to_calculate].iteritems(): 
+                        features = calculate_statistical_features(column_data, column_name)
+                        if(segment_result.empty):
+                            segment_result = pd.DataFrame([features])
+                        else:
+                            segment_result = pd.concat([segment_result, pd.DataFrame([features])], axis=1)
+                        #segment_result = pd.concat([segment_result, features], ignore_index=True)
+                    segment_result.insert(0, 'Condition', condition)
+                    segment_result.insert(1, 'Segment', segment)
+                    result = pd.concat([result, segment_result]).reset_index(drop=True)
+            
+            result.to_csv(participant_features_file)
+            return result
+        else:
+            print('Features file found. Loading features file for participant: ' + str(participant_number))
+            return  pd.read_csv(participant_features_file, index_col=0)
     
 
 
