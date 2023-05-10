@@ -252,3 +252,38 @@ windowed_features_file = 'D:\\co2-study\\temp\\windowed_features.csv'
 windowed_features = pd.read_csv(windowed_features_file, index_col=0)
 #%%
 filtered_data = features[(features['Condition'].isin(['AIR', 'CO2'])) & (features['Segment'] == 'gas_inhalation')]
+
+
+#%%
+
+from utils.plots import plot_features_time_series, contact_gsr_line_plot
+
+# File containing features for entire segments
+segment_features_file = 'D:\\co2-study\\temp\\segment_features.csv'
+segment_features = pd.read_csv(segment_features_file, index_col=0)
+
+# File containing features for windows of data
+windowed_features_file = 'D:\\co2-study\\temp\\windowed_features.csv'
+windowed_features = pd.read_csv(windowed_features_file, index_col=0)
+
+# Filter the data for 'air' and 'co2' conditions with 'gas_inhalation' segment
+gas_inhalation_segments = segment_features[(segment_features['Condition'].isin(['AIR', 'CO2'])) & (segment_features['Segment'] == 'gas_inhalation')]
+gas_inhalation_windows = windowed_features[(windowed_features['Condition'].isin(['AIR', 'CO2'])) & (windowed_features['Segment'] == 'gas_inhalation')]
+
+gas_inhalation_segments['pupil_size_combined'] = (gas_inhalation_segments['VerboseData.Left.PupilDiameterMm_mean'] + gas_inhalation_segments['VerboseData.Right.PupilDiameterMm_mean']) / 2
+gas_inhalation_windows['pupil_size_combined'] = (gas_inhalation_windows['VerboseData.Left.PupilDiameterMm_mean'] + gas_inhalation_windows['VerboseData.Right.PupilDiameterMm_mean']) / 2
+
+
+# add window index for each participant/condition
+window_index = pd.DataFrame({'window_index': gas_inhalation_windows.groupby(['participant_number', 'Condition']).cumcount()})
+gas_inhalation_windows.insert(3, 'window_index', window_index['window_index'])
+#%%
+
+
+
+muscles = ['LeftOrbicularis','RightOrbicularis', 'LeftFrontalis', 'RightFrontalis', 'LeftZygomaticus', 'RightZygomaticus', 'CenterCorrugator']
+
+for muscle in muscles:
+    muscle_name = f'Emg/Contact[{muscle}]_mean'
+    plot_title = f'{muscle} Mean Over Time'
+    contact_gsr_line_plot(gas_inhalation_windows, muscle_name, plot_title)

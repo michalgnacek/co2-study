@@ -7,6 +7,10 @@ Created on Sat Apr 15 02:23:12 2023
 
 import matplotlib.pyplot as plt
 import os
+from scipy import stats
+import seaborn as sns
+import matplotlib.lines as mlines
+import numpy as np
 
 def plot_eyetracking_filter(raw_signal, filtered_signal, participant_id, condition):
     # Plot the original and filtered signals
@@ -258,7 +262,128 @@ def plot_assess_filter2(unfiltered_signal, filtered_signal):
     plt.title('Butterworth Low-pass Filter')
     plt.legend()
     plt.show()
+
+def plot_features_time_series(windowed_features, feature_column, title, xlabel, ylabel, plot_path=False):
+    plt.figure(figsize=(6, 5))
+    mean_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].mean().reset_index()
+    #mean_gsr['condition_index'] = mean_gsr.groupby('Condition').cumcount()
     
+    # Scale the x-axis values to a range between 0 and 20
+    mean_gsr['condition_index'] = (mean_gsr.groupby('Condition').cumcount() / mean_gsr['window_index'].max()) * 20
+    
+    
+    # Compute the standard error of the mean
+    sem_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].sem().reset_index()
+    sem_gsr_air = sem_gsr[sem_gsr['Condition']=='AIR']
+    sem_gsr_co2 = sem_gsr[sem_gsr['Condition']=='CO2']
+    
+    # Set the plot style
+    sns.set(style='whitegrid')
+    
+    # Plot the line plot
+    sns.lineplot(x=mean_gsr['condition_index'], y=feature_column, hue='Condition', data=mean_gsr)
+        
+    plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column]-sem_gsr_air[feature_column], 
+                      mean_gsr[feature_column]+sem_gsr_air[feature_column], alpha=0.2)
+    
+    plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column]-sem_gsr_co2[feature_column], 
+                      mean_gsr[feature_column]+sem_gsr_co2[feature_column], alpha=0.2)
+    
+    # Customize plot titles and labels
+    plt.title(title, weight='bold')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    #plt.xticks(np.arange(0, 21, 5))
+    plt.xlim([0, 20])
+    
+    #if(not plot_path):
+      #   plt.savefig(plot_path)
+    plt.savefig(plot_path)
+    
+    # Display the plot
+    plt.show()
+    
+def contact_gsr_line_plot(windowed_features, column_name, title, plot_directory):
+    mean_contact = windowed_features.groupby(['Condition', 'window_index'])[column_name].mean().reset_index()
+    mean_contact['condition_index'] = mean_contact.groupby('Condition').cumcount()
+    mean_gsr = windowed_features.groupby(['Condition', 'window_index'])['Biopac_GSR_mean'].mean().reset_index()
+    mean_gsr['condition_index'] = mean_gsr.groupby('Condition').cumcount()
+    
+    plt.figure(figsize=(6, 5))
+    
+    # Compute SE of GSR
+    gsr_se = windowed_features.groupby(['Condition', 'window_index'])['Biopac_GSR_mean'].sem().reset_index()
+    gsr_se_air = gsr_se[gsr_se['Condition']=='AIR']
+    gsr_se_co2 = gsr_se[gsr_se['Condition']=='CO2']
+        
+
+    # Plot SE of GSR
+    plt.fill_between(mean_gsr['condition_index'], mean_gsr['Biopac_GSR_mean']-gsr_se_air['Biopac_GSR_mean'], 
+                      mean_gsr['Biopac_GSR_mean']+gsr_se_air['Biopac_GSR_mean'], alpha=0.2)
+    
+    plt.fill_between(mean_gsr['condition_index'], mean_gsr['Biopac_GSR_mean']-gsr_se_co2['Biopac_GSR_mean'], 
+                      mean_gsr['Biopac_GSR_mean']+gsr_se_co2['Biopac_GSR_mean'], alpha=0.2)
+    
+    
+    # Compute SE of Contact column
+    contact_se = windowed_features.groupby(['Condition', 'window_index'])[column_name].sem().reset_index()
+    contact_se_air = contact_se[contact_se['Condition']=='AIR']
+    contact_se_co2 = contact_se[contact_se['Condition']=='CO2']
+        
+    # Plot SE of Contact column
+    plt.fill_between(mean_contact['condition_index'], mean_contact[column_name]-contact_se_air[column_name], 
+                      mean_contact[column_name]+contact_se_air[column_name], alpha=0.2)
+    
+    plt.fill_between(mean_contact['condition_index'], mean_contact[column_name]-contact_se_co2[column_name], 
+                      mean_contact[column_name]+contact_se_co2[column_name], alpha=0.2)
+    
+    # Set the plot style
+    sns.set(style='whitegrid')
+
+    # Plot the line plot
+    sns.lineplot(x=mean_contact['condition_index'], y=column_name, hue='Condition', data=mean_contact)
+    sns.lineplot(x=mean_gsr['condition_index'], y='Biopac_GSR_mean', hue='Condition', data=mean_gsr, linestyle='--', alpha=0.5)
+
+    # Get the current axes
+    ax = plt.gca()
+
+    # Create custom legend handles and labels
+    solid_line = mlines.Line2D([], [], color='blue', linestyle='-', label='AIR_Contact')
+    dotted_line = mlines.Line2D([], [], color='blue', linestyle='--', label='AIR_GSR')
+    solid_line2 = mlines.Line2D([], [], color='orange', linestyle='-', label='CO2_Contact')
+    dotted_line2 = mlines.Line2D([], [], color='orange', linestyle='--', label='CO2_GSR')
+
+    # Set the legend handles and labels
+    handles = [solid_line, dotted_line, solid_line2, dotted_line2]
+    labels = ['AIR_Contact', 'AIR_GSR', 'CO2_Contact', 'CO2_GSR']
+    ax.legend(handles, labels)
+
+    # Customize plot titles and labels
+    plt.title(title, weight='bold')
+    plt.xlabel('Time windows')
+    plt.ylabel(column_name)
+    
+    plt.savefig(os.path.join(plot_directory, column_name.replace('/', '_').replace('[', '_').replace(']', '_')))
+
+    # Display the plot
+    plt.show()
+    
+def plot_segment_violin(segment_features, column_name, title, x_label, y_label, plot_directory):
+        
+    # Create the violin plot
+    sns.violinplot(x='Condition', y=column_name, data=segment_features)
+    
+    # Customize plot titles and labels
+    sns.set(style='whitegrid')
+    plt.title(title, weight='bold')
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    #plt.figure(figsize=(10, 6))
+    
+    plt.savefig(os.path.join(plot_directory, column_name.replace('/', '_').replace('[', '_').replace(']', '_') + '_segments'))
+    
+    # Display the plot
+    plt.show()
 
 
 
