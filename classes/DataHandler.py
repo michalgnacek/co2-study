@@ -16,7 +16,6 @@ from utils.timestamps import j2000_to_unix, generate_biopac_unix_timestamps
 from utils.impute_eye_tracking_data import impute_eye_data
 import utils.constants as constants
 from utils.normalisation import min_max_normalisation
-from sklearn.preprocessing import MinMaxScaler
 import utils.filters as filters
 from utils.generate_sliding_windows import generate_sliding_windows
 from classes.Features import calculate_statistical_features
@@ -286,7 +285,7 @@ class DataHandler:
                     segment_result = pd.DataFrame()
                     for window in windows:
                         window_features = pd.DataFrame()
-                        for column_name, column_data in window[columns_to_calculate].iteritems(): 
+                        for column_name, column_data in window[columns_to_calculate].items(): 
                             features = calculate_statistical_features(column_data, column_name)
                             if(window_features.empty):
                                 window_features = pd.DataFrame([features])

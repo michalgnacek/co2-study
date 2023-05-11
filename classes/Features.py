@@ -53,7 +53,10 @@ def calculate_rsp_features(df_rsp, sampling_frequency):
     """
     SUBSET_FEATURES = ['RSP_Rate_Mean', 'RSP_Amplitude_Mean', 'RSP_Phase_Duration_Ratio']
     df_rsp.dropna(inplace=True)
+    window_size = 60
     if(df_rsp.empty):
+        return pd.DataFrame(np.nan, index=[0], columns=SUBSET_FEATURES)
+    if(len(df_rsp)<(window_size*sampling_frequency)):
         return pd.DataFrame(np.nan, index=[0], columns=SUBSET_FEATURES)
     else:
         signals, info = nk.rsp_process(df_rsp, sampling_rate=sampling_frequency)
@@ -74,8 +77,11 @@ def calculate_gsr_features(df_gsr, sampling_frequency):
     time-domain features.
     """
     SUBSET_FEATURES = ['SCR_Peaks_N', 'SCR_Peaks_Amplitude_Mean']
+    window_size = 60
     df_gsr.dropna(inplace=True)
     if(df_gsr.empty):
+        return pd.DataFrame(np.nan, index=[0], columns=SUBSET_FEATURES)
+    if(len(df_gsr)<(window_size*sampling_frequency)):
         return pd.DataFrame(np.nan, index=[0], columns=SUBSET_FEATURES)
     if(df_gsr.isna().any()):
         return pd.DataFrame(np.nan, index=[0], columns=SUBSET_FEATURES)
@@ -84,9 +90,8 @@ def calculate_gsr_features(df_gsr, sampling_frequency):
         
         gsr_features = nk.eda_analyze(signals, sampling_rate=50)
 
-        # HRV features from neurokit2 that should be forwarded for final dataset
-        #SUBSET_FEATURES = ['RSP_Rate_Mean', 'RSP_Amplitude_Mean', 'RSP_Phase_Duration_Ratio']
-        #gsr_features = gsr_features[ SUBSET_FEATURES ]
+        SUBSET_FEATURES = ['SCR_Peaks_N', 'SCR_Peaks_Amplitude_Mean', 'EDA_Tonic_SD','EDA_Autocorrelation']
+        gsr_features = gsr_features[ SUBSET_FEATURES ]
         
         return gsr_features
 
@@ -121,17 +126,17 @@ def calculate_statistical_features(window, column_name):
     
     if(column_name=='Ppg/Raw.ppg'):
         hrv_time_features = calculate_hrv_features(window, 50)
-        for hrv_feature_name, hrv_feature_data in hrv_time_features.iteritems(): 
+        for hrv_feature_name, hrv_feature_data in hrv_time_features.items(): 
             features[hrv_feature_name] = hrv_feature_data[0]
     
     if(column_name=='Biopac_RSP'):
         rsp_time_features = calculate_rsp_features(window, 50)
-        for rsp_feature_name, rsp_feature_data in rsp_time_features.iteritems(): 
+        for rsp_feature_name, rsp_feature_data in rsp_time_features.items(): 
             features[rsp_feature_name] = rsp_feature_data[0]
             
     if(column_name=='Biopac_GSR'):
         gsr_time_features = calculate_gsr_features(window, 50)
-        for gsr_feature_name, gsr_feature_data in gsr_time_features.iteritems(): 
+        for gsr_feature_name, gsr_feature_data in gsr_time_features.items(): 
             features[gsr_feature_name] = gsr_feature_data[0]
     
     return features

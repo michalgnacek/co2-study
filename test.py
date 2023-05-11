@@ -148,99 +148,11 @@ signal_file = 'D:\\co2-study\\temp\\combined_data.csv'
 signals = pd.read_csv(signal_file)
 
 #%%
-synced_participant_file = pd.read_csv('D:\\co2-study\\temp\\synced_participant_data\\2_john.csv')
+synced_participant_file = pd.read_csv('D:\\co2-study\\temp\\synced_participant_data\\23_peter_h.csv')
 
 #%%
-test = DataHandler.extract_features_entire_condition(synced_participant_file)
-#test = DataHandler.extract_features(synced_participant_file)
-
-#%%
-features_file = 'D:\\co2-study\\temp\\segment_features.csv'
-features = pd.read_csv(features_file, index_col=0)
-
-#%%
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-# Assuming you have a DataFrame called 'df' with the desired columns
-
-# Filter the data for 'air' and 'co2' conditions with 'gas_inhalation' segment
-filtered_data = features[(features['Condition'].isin(['AIR', 'CO2'])) & (features['Segment'] == 'gas_inhalation')]
-
-# Create the violin plot
-sns.violinplot(x='Condition', y='Biopac_GSR_mean', data=filtered_data)
-
-# Customize plot titles and labels
-sns.set(style='whitegrid')
-plt.title('Mean GSR for Air and CO2 Conditions')
-plt.xlabel('Condition')
-plt.ylabel('GSR Mean')
-
-# Display the plot
-plt.show()
-
-#%%
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-# Assuming you have a DataFrame called 'df' with the desired columns
-
-# Filter the data for 'air' and 'co2' conditions with 'gas_inhalation' segment
-filtered_data = features[(features['Condition'].isin(['AIR', 'CO2'])) & (features['Segment'] == 'gas_inhalation')]
-
-# Create the violin plot
-sns.violinplot(x='Condition', y='RSP_Rate_Mean', data=filtered_data)
-
-# Customize plot titles and labels
-sns.set(style='whitegrid')
-plt.title('Mean Respiratory Rate for Air and CO2 Conditions')
-plt.xlabel('Condition')
-plt.ylabel('Mean Respiration')
-
-# Display the plot
-plt.show()
-
-#%%
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-# Assuming you have a DataFrame called 'df' with the desired columns
-
-# Filter the data for 'air' and 'co2' conditions with 'gas_inhalation' segment
-filtered_data = features[(features['Condition'].isin(['AIR', 'CO2'])) & (features['Segment'] == 'gas_inhalation')]
-
-# Create the violin plot
-sns.violinplot(x='Condition', y='VerboseData.Left.PupilDiameterMm_mean', data=filtered_data)
-
-# Customize plot titles and labels
-sns.set(style='whitegrid')
-plt.title('Mean Pupil Size for Air and CO2 Conditions')
-plt.xlabel('Condition')
-plt.ylabel('Mean Pupil Size')
-
-# Display the plot
-plt.show()
-
-#%%
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-# Assuming you have a DataFrame called 'df' with the desired columns
-
-# Filter the data for 'air' and 'co2' conditions with 'gas_inhalation' segment
-filtered_data = features[(features['Condition'].isin(['AIR', 'CO2'])) & (features['Segment'] == 'gas_inhalation')]
-
-# Create the violin plot
-sns.violinplot(x='Condition', y='PPG_Rate_Mean', data=filtered_data)
-
-# Customize plot titles and labels
-sns.set(style='whitegrid')
-plt.title('Mean Heart Rate for Air and CO2 Conditions')
-plt.xlabel('Condition')
-plt.ylabel('Mean Heart Rate')
-
-# Display the plot
-plt.show()
+#test = DataHandler.extract_features_entire_condition(synced_participant_file)
+test = DataHandler.extract_features(synced_participant_file)
 
 #%%
 # File containing features for entire segments
@@ -250,40 +162,4 @@ segment_features = pd.read_csv(segment_features_file, index_col=0)
 # File containing features for windows of data
 windowed_features_file = 'D:\\co2-study\\temp\\windowed_features.csv'
 windowed_features = pd.read_csv(windowed_features_file, index_col=0)
-#%%
-filtered_data = features[(features['Condition'].isin(['AIR', 'CO2'])) & (features['Segment'] == 'gas_inhalation')]
 
-
-#%%
-
-from utils.plots import plot_features_time_series, contact_gsr_line_plot
-
-# File containing features for entire segments
-segment_features_file = 'D:\\co2-study\\temp\\segment_features.csv'
-segment_features = pd.read_csv(segment_features_file, index_col=0)
-
-# File containing features for windows of data
-windowed_features_file = 'D:\\co2-study\\temp\\windowed_features.csv'
-windowed_features = pd.read_csv(windowed_features_file, index_col=0)
-
-# Filter the data for 'air' and 'co2' conditions with 'gas_inhalation' segment
-gas_inhalation_segments = segment_features[(segment_features['Condition'].isin(['AIR', 'CO2'])) & (segment_features['Segment'] == 'gas_inhalation')]
-gas_inhalation_windows = windowed_features[(windowed_features['Condition'].isin(['AIR', 'CO2'])) & (windowed_features['Segment'] == 'gas_inhalation')]
-
-gas_inhalation_segments['pupil_size_combined'] = (gas_inhalation_segments['VerboseData.Left.PupilDiameterMm_mean'] + gas_inhalation_segments['VerboseData.Right.PupilDiameterMm_mean']) / 2
-gas_inhalation_windows['pupil_size_combined'] = (gas_inhalation_windows['VerboseData.Left.PupilDiameterMm_mean'] + gas_inhalation_windows['VerboseData.Right.PupilDiameterMm_mean']) / 2
-
-
-# add window index for each participant/condition
-window_index = pd.DataFrame({'window_index': gas_inhalation_windows.groupby(['participant_number', 'Condition']).cumcount()})
-gas_inhalation_windows.insert(3, 'window_index', window_index['window_index'])
-#%%
-
-
-
-muscles = ['LeftOrbicularis','RightOrbicularis', 'LeftFrontalis', 'RightFrontalis', 'LeftZygomaticus', 'RightZygomaticus', 'CenterCorrugator']
-
-for muscle in muscles:
-    muscle_name = f'Emg/Contact[{muscle}]_mean'
-    plot_title = f'{muscle} Mean Over Time'
-    contact_gsr_line_plot(gas_inhalation_windows, muscle_name, plot_title)
