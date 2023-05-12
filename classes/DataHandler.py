@@ -173,7 +173,7 @@ class DataHandler:
         co2_data = data_to_normalise.copy()[participant_df['Condition']=='CO2']
 
         
-        for col_name, col_data in data_to_normalise.iteritems():
+        for col_name, col_data in data_to_normalise.items():
             #if column needs to be normalised
             if(col_name in constants.NORMALISATION_COLUMNS):
                 air_data = col_data[data_to_normalise['Condition']=='AIR']
@@ -199,7 +199,7 @@ class DataHandler:
         data_to_normalise = data_to_normalise[data_to_normalise['Segment'].notna()].reset_index(drop=True)
         normalised_data = data_to_normalise.copy()
         
-        for col_name, col_data in data_to_normalise.iteritems():
+        for col_name, col_data in data_to_normalise.items():
             #if column needs to be normalised
             if(col_name in constants.NORMALISATION_COLUMNS):
                 normalised_data[col_name] = min_max_normalisation(col_data)
@@ -390,7 +390,7 @@ class DataHandler:
                     segment_df = condition_df[condition_df['Segment']==segment]
     
                     segment_result = pd.DataFrame()
-                    for column_name, column_data in segment_df[columns_to_calculate].iteritems(): 
+                    for column_name, column_data in segment_df[columns_to_calculate].items(): 
                         features = calculate_statistical_features(column_data, column_name)
                         if(segment_result.empty):
                             segment_result = pd.DataFrame([features])

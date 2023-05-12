@@ -15,7 +15,7 @@ def calculate_hrv_features(df_ppg, sampling_frequency):
     time-domain features.
     """
     SUBSET_FEATURES = ["PPG_Rate_Mean","HRV_MeanNN","HRV_SDNN","HRV_RMSSD","HRV_SDSD","HRV_MedianNN", "HRV_IQRNN"]
-    exclude_hr_range = True
+    exclude_hr_range = False
     
     signals, info = nk.ppg_process(df_ppg, sampling_rate=sampling_frequency)
     
@@ -39,6 +39,10 @@ def calculate_hrv_features(df_ppg, sampling_frequency):
                     #break
     
     ppg_features = nk.ppg_analyze(signals, sampling_rate=50)
+    ppg_hr = ppg_features['PPG_Rate_Mean'][0]
+    if((ppg_hr < 40) or (ppg_hr > 200)):
+        return pd.DataFrame(np.nan, index=[0], columns=SUBSET_FEATURES)
+        
 
     # HRV features from neurokit2 that should be forwarded for final dataset
 
@@ -90,12 +94,14 @@ def calculate_gsr_features(df_gsr, sampling_frequency):
         
         gsr_features = nk.eda_analyze(signals, sampling_rate=50)
 
-        SUBSET_FEATURES = ['SCR_Peaks_N', 'SCR_Peaks_Amplitude_Mean', 'EDA_Tonic_SD','EDA_Autocorrelation']
+        SUBSET_FEATURES = ['SCR_Peaks_N', 'SCR_Peaks_Amplitude_Mean', 'EDA_Tonic_SD']
         gsr_features = gsr_features[ SUBSET_FEATURES ]
         
         return gsr_features
 
 def calculate_statistical_features(window, column_name):
+    window = window.dropna()
+    
     features = {}
     features[column_name + '_mean'] = np.mean(window)
     features[column_name + '_std'] = np.std(window)
@@ -117,8 +123,12 @@ def calculate_statistical_features(window, column_name):
     features[column_name + '_iqr'] = window.quantile(0.75) - window.quantile(0.25)
 
     # Calculate first and second derivatives
-    first_derivative = np.gradient(window)
-    second_derivative = np.gradient(first_derivative)
+    if(not len(window)==0):
+        first_derivative = np.gradient(window)
+        second_derivative = np.gradient(first_derivative)
+    else:
+        first_derivative = np.nan
+        second_derivative = np.nan
     features[column_name + '_1st_derivative_mean'] = np.mean(first_derivative)
     features[column_name + '_1st_derivative_std'] = np.std(first_derivative)
     features[column_name + '_2nd_derivative_mean'] = np.mean(second_derivative)
