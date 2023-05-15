@@ -263,7 +263,8 @@ def plot_assess_filter2(unfiltered_signal, filtered_signal):
     plt.legend()
     plt.show()
 
-def plot_features_time_series(windowed_features, feature_column, title, xlabel, ylabel, plot_path=False):
+def plot_features_time_series(windowed_features, feature_column, title, xlabel, ylabel, plot_path=False, 
+                              air_prediction_line=[], co2_prediction_line=[]):
     plt.figure(figsize=(6, 5))
     mean_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].mean().reset_index()
     #mean_gsr['condition_index'] = mean_gsr.groupby('Condition').cumcount()
@@ -281,7 +282,7 @@ def plot_features_time_series(windowed_features, feature_column, title, xlabel, 
     sns.set(style='whitegrid')
     
     # Plot the line plot
-    sns.lineplot(x=mean_gsr['condition_index'], y=feature_column, hue='Condition', data=mean_gsr)
+    sns.lineplot(x=mean_gsr['condition_index'], y=feature_column, hue='Condition', data=mean_gsr, linewidth=3)
         
     plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column]-sem_gsr_air[feature_column], 
                       mean_gsr[feature_column]+sem_gsr_air[feature_column], alpha=0.2)
@@ -295,6 +296,12 @@ def plot_features_time_series(windowed_features, feature_column, title, xlabel, 
     plt.ylabel(ylabel)
     #plt.xticks(np.arange(0, 21, 5))
     plt.xlim([0, 20])
+    
+    if(not len(co2_prediction_line)==0):
+        plt.plot((co2_prediction_line[0] * 20 / 114), co2_prediction_line[1], color='red', label='CO2 Fitted', linestyle=(0, (5, 10)))
+        
+    if(not len(air_prediction_line)==0):
+        plt.plot((air_prediction_line[0] * 20 / 114), air_prediction_line[1], color='blue', label='Air Fitted', linestyle=(0, (5, 10)))
     
     #if(not plot_path):
       #   plt.savefig(plot_path)
