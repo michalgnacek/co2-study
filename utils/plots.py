@@ -391,6 +391,14 @@ def plot_segment_violin(segment_features, column_name, title, x_label, y_label, 
     
     # Display the plot
     plt.show()
+    
+def plot_correlation_heatmap(data, plot_directory):
+
+    plt.figure(figsize=(12,12))
+    sns.heatmap(data, annot=False, cmap='coolwarm', square=False)
+    plt.tight_layout()
+    plt.savefig(plot_directory)
+
 
 
 
