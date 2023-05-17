@@ -134,8 +134,8 @@ class Tests:
         
         ## AIR_________________
         air_model = smf.mixedlm(formula=(dependent_variable + ' ~ window_index + np.power(window_index, '+ str(power) +')'), data=air_windows, groups=air_windows["participant_number"]).fit()
-        # #print('AIR MODEL')
-        # #print(air_model.summary())
+        print('AIR MODEL')
+        print(air_model.summary())
         
         # Generate a range of x values for plotting
         air_x_values = np.linspace(air_windows['window_index'].min(), air_windows['window_index'].max(), 100)
@@ -145,8 +145,8 @@ class Tests:
         
         ## CO2_________________
         co2_model = smf.mixedlm(formula=(dependent_variable + ' ~ window_index + np.power(window_index, '+ str(power) +')'), data=co2_windows, groups=co2_windows["participant_number"]).fit()
-        # #print('CO2 MODEL')
-        # #print(co2_model.summary())
+        print('CO2 MODEL')
+        print(co2_model.summary())
         
         # Generate a range of x values for plotting
         co2_x_values = np.linspace(air_windows['window_index'].min(), co2_windows['window_index'].max(), co2_windows['window_index'].max()+1)
@@ -171,7 +171,7 @@ class Tests:
         
         print('Running one mixed polynomial regression model with condition as an independent variable: ' + dependent_variable)
         
-        model = smf.mixedlm(dependent_variable + ' ~ window_index * Condition', data=combined_windows, groups=combined_windows["participant_number"])
+        model = smf.mixedlm(dependent_variable + ' ~ window_index + Condition', data=combined_windows, groups=combined_windows["participant_number"])
         # Fit the model
         results = model.fit()
 
@@ -180,6 +180,7 @@ class Tests:
         print(f"{dependent_variable} in CO2 condition is on average higher by {condition_coef:.3f}")
 
         # # Print the model summary
+        print('COMBINED MODEL')
         print(results.summary())
         
         
