@@ -439,6 +439,42 @@ class Plots:
         plt.title('Mean ' + mean_contact['Condition'].unique()[0] +' Amplitude', weight='bold')
         plt.savefig(plot_path)
         plt.show()
+        
+    def imu_gyro(data, plot_path):
+    
+        gyro_axis = ['Gyroscope/Raw.x_mean', 'Gyroscope/Raw.y_mean', 'Gyroscope/Raw.z_mean']
+        lines = []
+        plt.figure(figsize=(10, 6))
+        for axis in gyro_axis:
+            plot_title = f'{gyro_axis} Mean Over Time'
+            mean_contact = data.groupby(['Condition', 'window_index'])[axis].mean().reset_index()
+            mean_contact['condition_index'] = (mean_contact.groupby('Condition').cumcount() / mean_contact['window_index'].max()) * 20
+            line, = plt.plot(mean_contact['condition_index'],mean_contact[axis], linewidth=3)
+            lines.append(line)
+        
+        plt.legend(lines, gyro_axis)
+        
+        plt.title('Mean ' + mean_contact['Condition'].unique()[0] +' Gyroscope', weight='bold')
+        plt.savefig(plot_path)
+        plt.show()
+        
+    def imu_acc(data, plot_path):
+    
+        gyro_axis = ['Accelerometer/Raw.x_mean', 'Accelerometer/Raw.y_mean', 'Accelerometer/Raw.z_mean']
+        lines = []
+        plt.figure(figsize=(10, 6))
+        for axis in gyro_axis:
+            plot_title = f'{gyro_axis} Mean Over Time'
+            mean_contact = data.groupby(['Condition', 'window_index'])[axis].mean().reset_index()
+            mean_contact['condition_index'] = (mean_contact.groupby('Condition').cumcount() / mean_contact['window_index'].max()) * 20
+            line, = plt.plot(mean_contact['condition_index'],mean_contact[axis], linewidth=3)
+            lines.append(line)
+        
+        plt.legend(lines, gyro_axis)
+        
+        plt.title('Mean ' + mean_contact['Condition'].unique()[0] +' Accelerometer', weight='bold')
+        plt.savefig(plot_path)
+        plt.show()
     
     
     
