@@ -14,7 +14,7 @@ from datetime import datetime
 from classes.Participant import Participant
 import matplotlib.pyplot as plt
 import numpy as np
-from utils.plots import plot_eyetracking_filter, plot_participant_overview, plot_assess_filter, plot_assess_filter2
+from utils.Plots import Plots
 from utils.normalisation import eye_tracking as normalise_eye_tracking
 from classes.DataHandler import DataHandler
 # Constants
@@ -53,73 +53,9 @@ co2_eye_data = DataHandler.load_eyetracking_data(co2_eyetracking_file, '28_atul_
 #%% LOAD SYNCED PARTICIAPNT DF
 synced_participant_file = 'D:\\co2-study\\temp\\synced_participant_data\\63_reuben_moerman.csv'
 participant_df = pd.read_csv(synced_participant_file)
-#plot_participant_overview(participant_df, False)
-#%%
-participant_df = DataHandler.normalise_data(participant_df)
-#%%
-test = DataHandler.filter_data(participant_df)
-
-#%% PUPIL SIZE
-unfiltered_signal = participant_df[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value]
-filtered_signal = test[constants.DATA_COLUMNS.EYE_LEFT_PUPIL_SIZE.value]
-#plot_assess_filter(unfiltered_signal[50000:50500], filtered_signal[50000:50500])
-#plot_assess_filter(unfiltered_signal, filtered_signal)
-#plot_assess_filter2(unfiltered_signal[50000:50500], filtered_signal[50000:50500])
-plot_assess_filter2(unfiltered_signal, filtered_signal)
-
-#%% GSR
-unfiltered_signal = participant_df['Biopac_GSR']
-filtered_signal = test['Biopac_GSR']
-#plot_assess_filter(unfiltered_signal, filtered_signal)
-#plot_assess_filter2(unfiltered_signal[50000:50500], filtered_signal[50000:50500])
-plot_assess_filter2(unfiltered_signal, filtered_signal)
-#plt.plot(test['Biopac_GSR'][test['Condition']=='CO2'])
-#plt.plot(test['Biopac_GSR'][(test['Condition'] == 'CO2') & (test['Segment'] == 'brightness_calibration')])
-
-#%% RESPIRATION
-unfiltered_signal = participant_df['Biopac_RSP']
-filtered_signal = test['Biopac_RSP']
-#plot_assess_filter(unfiltered_signal, filtered_signal)
-plot_assess_filter2(unfiltered_signal, filtered_signal)
-#plt.plot(test['Biopac_GSR'][test['Condition']=='CO2'])
-#plt.plot(test['Biopac_GSR'][(test['Condition'] == 'CO2') & (test['Segment'] == 'brightness_calibration')])
-
-#%% PPG
-unfiltered_signal = participant_df['Ppg/Raw.ppg']
-filtered_signal = test['Ppg/Raw.ppg']
-#plot_assess_filter(unfiltered_signal, filtered_signal)
-plot_assess_filter2(unfiltered_signal, filtered_signal)
-#plt.plot(test['Biopac_GSR'][test['Condition']=='CO2'])
-#plt.plot(test['Biopac_GSR'][(test['Condition'] == 'CO2') & (test['Segment'] == 'brightness_calibration')])
-
-#%% EMG_CONTACT
-unfiltered_signal = participant_df['Emg/Contact[CenterCorrugator]']
-filtered_signal = test['Emg/Contact[CenterCorrugator]']
-#plot_assess_filter(unfiltered_signal, filtered_signal)
-plot_assess_filter2(unfiltered_signal, filtered_signal)
-#plt.plot(test['Biopac_GSR'][test['Condition']=='CO2'])
-#plt.plot(test['Biopac_GSR'][(test['Condition'] == 'CO2') & (test['Segment'] == 'brightness_calibration')])
-
-#%% ACC
-unfiltered_signal = participant_df['Accelerometer/Raw.x']
-filtered_signal = test['Accelerometer/Raw.x']
-#plot_assess_filter(unfiltered_signal, filtered_signal)
-plot_assess_filter2(unfiltered_signal, filtered_signal)
-#plt.plot(test['Biopac_GSR'][test['Condition']=='CO2'])
-#plt.plot(test['Biopac_GSR'][(test['Condition'] == 'CO2') & (test['Segment'] == 'brightness_calibration')])
-
-#%% GYR
-unfiltered_signal = participant_df['Gyroscope/Raw.x']
-filtered_signal = test['Gyroscope/Raw.x']
-#plot_assess_filter(unfiltered_signal, filtered_signal)
-plot_assess_filter2(unfiltered_signal, filtered_signal)
-#plt.plot(test['Biopac_GSR'][test['Condition']=='CO2'])
-#plt.plot(test['Biopac_GSR'][(test['Condition'] == 'CO2') & (test['Segment'] == 'brightness_calibration')])
-
-
+#Plots.participant_overview(participant_df, False)
 
 #%% feature extraction
-
 
 features = DataHandler.extract_features(participant_df)
 
