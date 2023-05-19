@@ -397,6 +397,8 @@ class Plots:
         
     def correlation_heatmap(data, plot_directory):
     
+        data = data.sort_index()
+        data = data.sort_index(axis=1)
         plt.figure(figsize=(12,12))
         sns.heatmap(data, annot=False, cmap='coolwarm', square=False)
         plt.tight_layout()

@@ -159,12 +159,12 @@ class Tests:
         # extract coefficients for air condition
         air_coef = air_model.params
         air_window_coef = air_coef['window_index']
-        air_intercept_coef = air_coef['Intercept']
+        #air_intercept_coef = air_coef['Intercept']
         
         # extract coefficients for CO2 condition
         co2_coef = co2_model.params
         co2_window_coef = co2_coef['window_index']
-        co2_intercept_coef = co2_coef['Intercept']
+        #co2_intercept_coef = co2_coef['Intercept']
         
         print(f"Air condition: {dependent_variable} increases by {air_window_coef:.3f} units per window")
         print(f"CO2 condition: {dependent_variable} increases by {co2_window_coef:.3f} units per window")
@@ -190,16 +190,14 @@ class Tests:
     
     def correlation_test(data_windows):
         
-        # Generate correlation matrix
-        # create a list of column names that contain "mean" or "Mean"
+        # create a list of column names that contain desired features
         mean_columns = data_windows.columns[data_windows.columns.str.contains('_mean|_Mean|HRV|SCR_Peaks_N|RSP_Phase_Duration_Ratio|EDA_Tonic_SD|pupil_size_combined')].tolist()
         mean_columns = list(filter(lambda item: 'derivative' not in item, mean_columns))
         mean_columns = list(filter(lambda item: 'Filtered' not in item, mean_columns))
         mean_columns.remove('Ppg/Raw.ppg_mean')
         
-        # select only the columns that contain "mean" or "Mean"
+        # select only the desired features columns
         df = data_windows[mean_columns]
-        #df_mean = df_mean.dropna()
         
         # Shorten column names
         df.rename(columns={
@@ -220,18 +218,20 @@ class Tests:
             'Emg/Amplitude[LeftFrontalis]_mean': 'Emg/A(LF)',
             
             'HeartRate/Average_mean': 'HeartRate(EmteqPro)',
-            'PPG_Rate_Mean': 'HeartRate(feature)',
-            'Accelerometer/Raw.x_mean': 'Acc(X)',
-            'Accelerometer/Raw.y_mean': 'Acc(Y)',
-            'Accelerometer/Raw.z_mean': 'Acc(Z)',
-            'Gyroscope/Raw.x_mean': 'Gyr(X)',
-            'Gyroscope/Raw.y_mean': 'Gyr(Y)',
-            'Gyroscope/Raw.z_mean': 'Gyr(Z)',
+            'PPG_Rate_Mean': 'HeartRate',
+            'Accelerometer/Raw.x_mean': 'IMU/Acc(X)',
+            'Accelerometer/Raw.y_mean': 'IMU/Acc(Y)',
+            'Accelerometer/Raw.z_mean': 'IMU/Acc(Z)',
+            'Gyroscope/Raw.x_mean': 'IMU/Gyr(X)',
+            'Gyroscope/Raw.y_mean': 'IMU/Gyr(Y)',
+            'Gyroscope/Raw.z_mean': 'IMU/Gyr(Z)',
             'pupil_size_combined': 'PupilSize(Combined)',
             'VerboseData.Right.PupilDiameterMm_mean': 'PupilSize(Right)',
             'VerboseData.Left.PupilDiameterMm_mean': 'PupilSize(Left)',
             'Biopac_GSR_mean': 'GSR',
-            'SCR_Peaks_Amplitude_Mean': 'SCR_Peaks_Amp',
+            'SCR_Peaks_Amplitude_Mean': 'GSR/SCR_Peaks_Amp',
+            'SCR_Peaks_N': 'GSR/SCR_Peaks_N',
+            'EDA_Tonic_SD': 'GSR/EDA_Tonic_SD',
             'Biopac_RSP_mean': 'RSP',
             'RSP_Rate_Mean': 'RSP_Rate',
             'RSP_Amplitude_Mean': 'RSP_Amp',
@@ -240,30 +240,22 @@ class Tests:
             # Add the remaining column name mappings here
         }, inplace=True)
         
+        # Drop columns we do not want
+        features_to_drop = ['HeartRate(EmteqPro)']
+        df = df.drop(columns=features_to_drop)
 
         # compute the correlation matrix
         corr_matrix = df.corr(method=lambda x, y: pearsonr(x, y)[0])
         
         # compute the p-values for each correlation coefficient
-        p_values = df.corr(method=lambda x, y: pearsonr(x, y)[1])
+        #p_values = df.corr(method=lambda x, y: pearsonr(x, y)[1])
         
         # adjust the p-values using FDR control
-        reject, p_values_fdr = multipletests(p_values.values.flatten(), alpha=0.05, method='fdr_by')[:2]
-        p_values_fdr = pd.DataFrame(p_values_fdr.reshape(p_values.shape), index=p_values.index, columns=p_values.columns)
+        #reject, p_values_fdr = multipletests(p_values.values.flatten(), alpha=0.05, method='fdr_by')[:2]
+        #p_values_fdr = pd.DataFrame(p_values_fdr.reshape(p_values.shape), index=p_values.index, columns=p_values.columns)
+                
+        return corr_matrix
         
-        # use the adjusted p-values to filter the correlation matrix
-        #corr_matrix_fdr = corr_matrix.where(p_values_fdr < 0.05)
-        #p_values_fdr = p_values_fdr.where(p_values_fdr < 0.05)
-        
-        
-        # dont filter based on fdr
-        corr_matrix_fdr = corr_matrix
-        
-        return corr_matrix_fdr
-        
-        # Save CSV
-        #corr_matrix_fdr.to_csv(os.path.join(notebook_temp_dir, "correlation_matrix_test_statistic.csv"))
-        #p_values_fdr.to_csv(os.path.join(notebook_temp_dir, "correlation_matrix_p_values.csv"))
 
 
 
