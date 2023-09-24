@@ -14,7 +14,7 @@ from datetime import datetime
 from classes.Participant import Participant
 import matplotlib.pyplot as plt
 import numpy as np
-from utils.Plots import Plots
+from utils.plots import Plots
 from utils.normalisation import eye_tracking as normalise_eye_tracking
 from classes.DataHandler import DataHandler
 # Constants
@@ -58,6 +58,23 @@ participant_df = pd.read_csv(synced_participant_file)
 #%% feature extraction
 
 features = DataHandler.extract_features(participant_df)
+
+#%% feature extraction
+
+features = DataHandler.extract_features(pd.read_csv('E:\\co2-study\\temp\\synced_participant_data\\2_john.csv'))
+
+#%%
+
+import neurokit2 as nk
+
+# Download data
+data = nk.data("bio_resting_8min_100hz")
+
+# Process the data
+df, info = nk.eda_process(data["EDA"], sampling_rate=100)
+
+# Single dataframe is passed
+nk.eda_intervalrelated(df)
 
 #%%
 synced_participant_file = 'D:\\co2-study\\temp\\synced_participant_data\\52_thomas_charnock.csv'

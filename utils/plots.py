@@ -410,7 +410,7 @@ class Plots:
         lines = []
         plt.figure(figsize=(10, 6))
         for muscle in muscles:
-            muscle_name = f'Emg/Contact[{muscle}]_mean'
+            muscle_name = f'Emg_Contact_{muscle}_mean'
             plot_title = f'{muscle} Mean Over Time'
             mean_contact = data.groupby(['Condition', 'window_index'])[muscle_name].mean().reset_index()
             mean_contact['condition_index'] = (mean_contact.groupby('Condition').cumcount() / mean_contact['window_index'].max()) * 20
@@ -422,6 +422,39 @@ class Plots:
         plt.title('Mean ' + mean_contact['Condition'].unique()[0] +' Contact', weight='bold')
         plt.savefig(plot_path)
         plt.show()
+
+    def contact_muscles2(air_data, co2_data, plot_path):
+        muscles = ['LeftOrbicularis', 'RightOrbicularis', 'LeftFrontalis', 'RightFrontalis', 'LeftZygomaticus', 'RightZygomaticus', 'CenterCorrugator']
+        
+        fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(8, 10), sharex=True)
+        #fig.subplots_adjust(hspace=0.5)
+        
+        datasets = [(air_data, 'Air'), (co2_data, 'CO2')]
+        
+        for ax, (data, condition) in zip(axes, datasets):
+            lines = []
+            for muscle in muscles:
+                muscle_name = f'Emg_Contact_{muscle}_mean'
+                
+                mean_contact = data.groupby(['window_index'])[muscle_name].mean().reset_index()
+                mean_contact['condition_index'] = (mean_contact['window_index'] / mean_contact['window_index'].max()) * 20
+                line, = ax.plot(mean_contact['condition_index'], mean_contact[muscle_name], linewidth=5, label=muscle)
+                lines.append(line)
+            
+            ax.set_title(f'{condition} Condition', weight='bold')
+            ax.set_xlabel('Time (minutes)')
+            ax.set_ylabel('Mean Skin Impedance')
+            
+            if condition == 'Air':
+                ax.legend(lines, muscles, loc='upper right', prop={'weight':'bold'})  # Place legend in the top left corner of CO2 plot
+                ax.set_ylim(0.14, 0.70)  # Set y-limits
+            #else:
+                #ax.legend(lines, muscles, loc='upper right')  # Use shared legend for the air plot
+            
+            #ax.set_ylim(0, 0.60)  # Set y-limits
+    
+        plt.savefig(plot_path)
+        plt.show()
     
     def amp_muscles(data, plot_path):
     
@@ -429,7 +462,7 @@ class Plots:
         lines = []
         plt.figure(figsize=(10, 6))
         for muscle in muscles:
-            muscle_name = f'Emg/Amplitude[{muscle}]_mean'
+            muscle_name = f'Emg_Amplitude_{muscle}_mean'
             plot_title = f'{muscle} Mean Over Time'
             mean_contact = data.groupby(['Condition', 'window_index'])[muscle_name].mean().reset_index()
             mean_contact['condition_index'] = (mean_contact.groupby('Condition').cumcount() / mean_contact['window_index'].max()) * 20
@@ -444,7 +477,7 @@ class Plots:
         
     def imu_gyro(data, plot_path):
     
-        gyro_axis = ['Gyroscope/Raw.x_mean', 'Gyroscope/Raw.y_mean', 'Gyroscope/Raw.z_mean']
+        gyro_axis = ['Gyroscope_Raw.x_mean', 'Gyroscope_Raw.y_mean', 'Gyroscope_Raw.z_mean']
         lines = []
         plt.figure(figsize=(10, 6))
         for axis in gyro_axis:
@@ -462,7 +495,7 @@ class Plots:
         
     def imu_acc(data, plot_path):
     
-        gyro_axis = ['Accelerometer/Raw.x_mean', 'Accelerometer/Raw.y_mean', 'Accelerometer/Raw.z_mean']
+        gyro_axis = ['Accelerometer_Raw.x_mean', 'Accelerometer_Raw.y_mean', 'Accelerometer_Raw.z_mean']
         lines = []
         plt.figure(figsize=(10, 6))
         for axis in gyro_axis:
@@ -477,6 +510,150 @@ class Plots:
         plt.title('Mean ' + mean_contact['Condition'].unique()[0] +' Accelerometer', weight='bold')
         plt.savefig(plot_path)
         plt.show()
+        
+    def contact_barplot(contact_air_windows, contact_co2_windows, plot_path):
+
+        # Assuming you have already imported and prepared your dataframes
+        # contact_air_windows and contact_co2_windows
+        
+        # Choose the columns representing different muscles/contacts to compare
+        columns_to_compare = ['Emg/Contact[RightOrbicularis]_mean', 'Emg/Contact[RightZygomaticus]_mean', 'Emg/Contact[RightFrontalis]_mean', 'Emg/Contact[CenterCorrugator]_mean', 'Emg/Contact[LeftFrontalis]_mean', 'Emg/Contact[LeftZygomaticus]_mean', 'Emg/Contact[LeftOrbicularis]_mean']
+        
+        # Create a subset of the dataframes for the selected columns
+        air_subset = contact_air_windows[columns_to_compare]
+        co2_subset = contact_co2_windows[columns_to_compare]
+        
+        # Set up the figure and axes
+        plt.figure(figsize=(8, 6))
+        ax = plt.subplot()
+        
+        # Width of the bars
+        bar_width = 0.4
+        
+        # Positions for the bar groups
+        positions_air = range(len(columns_to_compare))
+        positions_co2 = [pos + bar_width for pos in positions_air]
+        
+        # Create the bar groups
+        bars_air = ax.bar(positions_air, air_subset.mean(), width=bar_width, label='Air')
+        bars_co2 = ax.bar(positions_co2, co2_subset.mean(), width=bar_width, label='CO2')
+        
+        # Set x-axis labels and ticks
+        ax.set_xticks([pos + bar_width / 2 for pos in positions_air])
+        ax.set_xticklabels([col.split('[')[1].split(']')[0] for col in columns_to_compare])
+        plt.xticks(rotation=45, ha='right')
+        
+        # Set y-axis label
+        ax.set_ylabel('Mean Skin Impedance')
+        
+        # Set plot title and legend
+        plt.title('Mean Skin Impedance Comparison between Air and CO2')
+        plt.legend()
+        
+        # Show the plot
+        plt.tight_layout()
+        plt.savefig(plot_path)
+        plt.show()
+        
+    def contact_barplot_with_se(contact_air_windows, contact_co2_windows, plot_path):
+    
+        # Assuming you have already imported and prepared your dataframes
+        # contact_air_windows and contact_co2_windows
+        
+        # Choose the columns representing different muscles/contacts to compare
+        columns_to_compare = ['Emg_Contact_RightOrbicularis_mean', 'Emg_Contact_RightZygomaticus_mean', 'Emg_Contact_RightFrontalis_mean', 'Emg_Contact_CenterCorrugator_mean', 'Emg_Contact_LeftFrontalis_mean', 'Emg_Contact_LeftZygomaticus_mean', 'Emg_Contact_LeftOrbicularis_mean']
+        # Create a subset of the dataframes for the selected columns
+        air_subset = contact_air_windows[columns_to_compare]
+        co2_subset = contact_co2_windows[columns_to_compare]
+        
+        # Set up the figure and axes
+        plt.figure(figsize=(8, 6))
+        ax = plt.subplot()
+        
+        # Width of the bars
+        bar_width = 0.4
+        
+        # Positions for the bar groups
+        positions_air = np.arange(len(columns_to_compare))
+        positions_co2 = positions_air + bar_width
+        
+        # Compute mean and standard error for each group
+        mean_air = air_subset.mean()
+        sem_air = air_subset.sem()
+        mean_co2 = co2_subset.mean()
+        sem_co2 = co2_subset.sem()
+        
+        # Create the bar groups with error bars
+        bars_air = ax.bar(positions_air, mean_air, yerr=sem_air, width=bar_width, label='Air', capsize=5)
+        bars_co2 = ax.bar(positions_co2, mean_co2, yerr=sem_co2, width=bar_width, label='CO2', capsize=5)
+        
+        # Set x-axis labels and ticks
+        ax.set_xticks(positions_air + bar_width / 2)
+        ax.set_xticklabels(['RightOrbicularis', 'RightZygomaticus', 'RightFrontalis', 'CenterCorrugator', 'LeftFrontalis', 'LeftZygomaticus', 'LeftOrbicularis'])
+        plt.xticks(rotation=45, ha='right')
+        
+        # Set y-axis label
+        ax.set_ylabel('Mean Skin Impedance')
+        
+        # Set plot title and legend
+        plt.title('Mean Skin Impedance Comparison between Air and CO2')
+        plt.legend()
+        
+        # Show the plot
+        plt.tight_layout()
+        plt.savefig(plot_path)
+        plt.show()
+        
+    def amp_barplot_with_se(amp_air_windows, amp_co2_windows, plot_path):
+    
+        # Assuming you have already imported and prepared your dataframes
+        # contact_air_windows and contact_co2_windows
+        
+        # Choose the columns representing different muscles/contacts to compare
+        columns_to_compare = ['Emg_Amplitude_RightOrbicularis_mean', 'Emg_Amplitude_RightZygomaticus_mean', 'Emg_Amplitude_RightFrontalis_mean', 'Emg_Amplitude_CenterCorrugator_mean', 'Emg_Amplitude_LeftFrontalis_mean', 'Emg_Amplitude_LeftZygomaticus_mean', 'Emg_Amplitude_LeftOrbicularis_mean']
+        # Create a subset of the dataframes for the selected columns
+        air_subset = amp_air_windows[columns_to_compare]
+        co2_subset = amp_co2_windows[columns_to_compare]
+        
+        # Set up the figure and axes
+        plt.figure(figsize=(8, 6))
+        ax = plt.subplot()
+        
+        # Width of the bars
+        bar_width = 0.4
+        
+        # Positions for the bar groups
+        positions_air = np.arange(len(columns_to_compare))
+        positions_co2 = positions_air + bar_width
+        
+        # Compute mean and standard error for each group
+        mean_air = air_subset.mean()
+        sem_air = air_subset.sem()
+        mean_co2 = co2_subset.mean()
+        sem_co2 = co2_subset.sem()
+        
+        # Create the bar groups with error bars
+        bars_air = ax.bar(positions_air, mean_air, yerr=sem_air, width=bar_width, label='Air', capsize=5)
+        bars_co2 = ax.bar(positions_co2, mean_co2, yerr=sem_co2, width=bar_width, label='CO2', capsize=5)
+        
+        # Set x-axis labels and ticks
+        ax.set_xticks(positions_air + bar_width / 2)
+        ax.set_xticklabels(['RightOrbicularis', 'RightZygomaticus', 'RightFrontalis', 'CenterCorrugator', 'LeftFrontalis', 'LeftZygomaticus', 'LeftOrbicularis'])
+        plt.xticks(rotation=45, ha='right')
+        
+        # Set y-axis label
+        ax.set_ylabel('Mean EMG Amplitude')
+        
+        # Set plot title and legend
+        plt.title('Mean EMG Amplitude Comparison between Air and CO2')
+        plt.legend()
+        
+        # Show the plot
+        plt.tight_layout()
+        plt.savefig(plot_path)
+        plt.show()
+
+
     
     
     

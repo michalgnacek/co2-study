@@ -81,6 +81,7 @@ def calculate_gsr_features(df_gsr, sampling_frequency):
     time-domain features.
     """
     SUBSET_FEATURES = ['SCR_Peaks_N', 'SCR_Peaks_Amplitude_Mean']
+    #SUBSET_FEATURES = ['SCR_Peaks_N', 'SCR_Peaks_Amplitude_Mean', 'EDA_Tonic_SD']
     window_size = 60
     df_gsr.dropna(inplace=True)
     if(df_gsr.empty):
@@ -93,8 +94,12 @@ def calculate_gsr_features(df_gsr, sampling_frequency):
         signals, info = nk.eda_process(df_gsr, sampling_rate=sampling_frequency)
         
         gsr_features = nk.eda_analyze(signals, sampling_rate=50)
-
-        SUBSET_FEATURES = ['SCR_Peaks_N', 'SCR_Peaks_Amplitude_Mean', 'EDA_Tonic_SD']
+        print("printing features")
+        print(gsr_features)
+        
+        # Removed EDA_Tonic_SD due to bug in neurokit
+        #SUBSET_FEATURES = ['SCR_Peaks_N', 'SCR_Peaks_Amplitude_Mean', 'EDA_Tonic_SD']
+        SUBSET_FEATURES = ['SCR_Peaks_N', 'SCR_Peaks_Amplitude_Mean']
         gsr_features = gsr_features[ SUBSET_FEATURES ]
         
         return gsr_features
