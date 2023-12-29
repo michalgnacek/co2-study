@@ -11,8 +11,13 @@ from scipy import stats
 import seaborn as sns
 import matplotlib.lines as mlines
 import numpy as np
+from scipy.optimize import curve_fit
 
 class Plots:
+    
+    def __init__(self):
+    # Constructor or initialization method
+        pass
 
     def eyetracking_filter(raw_signal, filtered_signal, participant_id, condition):
         # Plot the original and filtered signals
@@ -304,6 +309,93 @@ class Plots:
             
         if(not len(air_prediction_line)==0):
             plt.plot((air_prediction_line[0] * 20 / 114), air_prediction_line[1], color='blue', label='Air Fitted', linestyle=(0, (5, 10)))
+        
+        #if(not plot_path):
+          #   plt.savefig(plot_path)
+        plt.savefig(plot_path)
+        
+        # Display the plot
+        plt.show()
+        
+        # Define the logistic function
+                
+    def features_time_series_gsr(windowed_features, feature_column, title, xlabel, ylabel, air_function, co2_function, plot_path=False, 
+                                  ):
+        plt.figure(figsize=(6, 5))
+        mean_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].mean().reset_index()
+        
+        # Scale the x-axis values to a range between 0 and 20
+        mean_gsr['condition_index'] = (mean_gsr.groupby('Condition').cumcount() / mean_gsr['window_index'].max()) * 20
+        
+        
+        # Compute the standard error of the mean
+        sem_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].sem().reset_index()
+        sem_gsr_air = sem_gsr[sem_gsr['Condition']=='AIR']
+        sem_gsr_co2 = sem_gsr[sem_gsr['Condition']=='CO2']
+        
+        # Set the plot style
+        sns.set(style='whitegrid')
+        
+        # Plot the line plot
+        sns.lineplot(x=mean_gsr['condition_index'], y=feature_column, hue='Condition', data=mean_gsr, linewidth=3)
+            
+        plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column]-sem_gsr_air[feature_column], 
+                          mean_gsr[feature_column]+sem_gsr_air[feature_column], alpha=0.2)
+        
+        plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column]-sem_gsr_co2[feature_column], 
+                          mean_gsr[feature_column]+sem_gsr_co2[feature_column], alpha=0.2)
+        
+        
+        # CO2 Condition FIT
+        # Fit the logistic function to the data with adjusted bounds
+        x_co2 = windowed_features['window_index'][windowed_features['Condition'] == 'CO2']
+        y_co2 = windowed_features[feature_column][windowed_features['Condition'] == 'CO2']
+        popt_co2, _ = curve_fit(co2_function, x_co2, y_co2, bounds=([0, 0, 0], [np.max(y_co2), np.max(x_co2), np.max(x_co2)]))
+        
+        a, b, c = popt_co2
+        # Print the logistic equation
+        print(f"CO2 Logistic Equation: y = {a} / (1 + e^(-{b} * (x - {c})))")
+        
+        # Generate y values using the fitted parameters for the desired x range
+        x_fit_co2 = np.linspace(min(x_co2), max(x_co2), 1000)  # Adjust the number of points as needed
+        fit_line_co2 = co2_function(x_fit_co2, *popt_co2)
+        
+        # Scale x_fit to the range [0, 20]
+        x_fit_scaled_co2 = (x_fit_co2 - min(x_fit_co2)) / (max(x_fit_co2) - min(x_fit_co2)) * 20
+        
+        # Plot only the logistic curve fit
+        plt.plot(x_fit_scaled_co2, fit_line_co2, '--', color='red', label='Logistic Fit', linewidth='3')
+        
+        
+        # AIR Condition FIT
+        # Fit the logistic function to the data with adjusted bounds
+        x_air = windowed_features['window_index'][windowed_features['Condition'] == 'AIR']
+        y_air = windowed_features[feature_column][windowed_features['Condition'] == 'AIR']
+        popt_air, _ = curve_fit(air_function, x_air, y_air, bounds=([0, 0, 0], [np.max(y_air), np.max(x_air), np.max(x_air)]))
+        
+        a, b, c = popt_air
+        # Print the logistic equation
+        print(f"AIR Quadratic Equation: y = {a} * (x - {c})^2 + {b}")
+        
+        # Generate y values using the fitted parameters for the desired x range
+        x_fit_air = np.linspace(min(x_air), max(x_air), 1000)  # Adjust the number of points as needed
+        fit_line_air = air_function(x_fit_air, *popt_air)
+        
+        # Scale x_fit to the range [0, 20]
+        x_fit_scaled_air = (x_fit_air - min(x_fit_air)) / (max(x_fit_air) - min(x_fit_air)) * 20
+        
+        # Plot only the logistic curve fit
+        plt.plot(x_fit_scaled_air, fit_line_air, '--', color='blue', label='Quadratic Fit', linewidth='3')
+        
+        
+        
+        # Customize plot titles and labels
+        plt.title(title, weight='bold')
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        #plt.xticks(np.arange(0, 21, 5))
+        plt.xlim([0, 20])
+    
         
         #if(not plot_path):
           #   plt.savefig(plot_path)
