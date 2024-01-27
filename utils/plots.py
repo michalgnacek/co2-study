@@ -12,6 +12,7 @@ import seaborn as sns
 import matplotlib.lines as mlines
 import numpy as np
 from scipy.optimize import curve_fit
+import math
 
 class Plots:
     
@@ -404,6 +405,424 @@ class Plots:
         # Display the plot
         plt.show()
         
+    def features_time_series_gsr2(windowed_features, feature_column, title, xlabel, ylabel, air_function, co2_function, plot_path=False, 
+                                  ):
+        plt.figure(figsize=(6, 5))
+        mean_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].mean().reset_index()
+        
+        # Scale the x-axis values to a range between 0 and 20
+        mean_gsr['condition_index'] = (mean_gsr.groupby('Condition').cumcount() / mean_gsr['window_index'].max()) * 20
+        
+        
+        # Compute the standard error of the mean
+        sem_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].sem().reset_index()
+        sem_gsr_air = sem_gsr[sem_gsr['Condition']=='AIR']
+        sem_gsr_co2 = sem_gsr[sem_gsr['Condition']=='CO2']
+        
+        # Set the plot style
+        sns.set(style='whitegrid')
+        
+        # Plot the line plot
+        sns.lineplot(x=mean_gsr['condition_index'], y=feature_column, hue='Condition', data=mean_gsr, linewidth=3)
+            
+        plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column]-sem_gsr_air[feature_column], 
+                          mean_gsr[feature_column]+sem_gsr_air[feature_column], alpha=0.2)
+        
+        plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column]-sem_gsr_co2[feature_column], 
+                          mean_gsr[feature_column]+sem_gsr_co2[feature_column], alpha=0.2)
+        
+        
+        # CO2 Condition FIT
+        # Fit the logistic function to the data with adjusted bounds
+        x_co2 = windowed_features['window_index'][windowed_features['Condition'] == 'CO2']
+        y_co2 = windowed_features[feature_column][windowed_features['Condition'] == 'CO2']
+        
+        
+        # Adjusted bounds and initial guess
+        bounds_co2 = ([0, 0, 0], [np.max(y_co2), np.max(x_co2), np.max(x_co2)])
+        initial_guess_co2 = [0.660, 0.161, 3.126]
+        
+        popt_co2, _ = curve_fit(co2_function, x_co2, y_co2, bounds=bounds_co2, p0=initial_guess_co2)
+        
+        
+        #popt_co2, _ = curve_fit(co2_function, x_co2, y_co2, bounds=([0, 0, 0], [np.max(y_co2), np.max(x_co2), np.max(x_co2)]))
+        
+        a, b, c = popt_co2
+        # Print the logistic equation
+        print(f"CO2 Logistic Equation: y = {a} / (1 + e^(-{b} * (x - {c})))")
+        
+        # Generate y values using the fitted parameters for the desired x range
+        x_fit_co2 = np.linspace(min(x_co2), max(x_co2), 1000)  # Adjust the number of points as needed
+        fit_line_co2 = co2_function(x_fit_co2, *popt_co2)
+        
+        # Scale x_fit to the range [0, 20]
+        x_fit_scaled_co2 = (x_fit_co2 - min(x_fit_co2)) / (max(x_fit_co2) - min(x_fit_co2)) * 20
+        
+        # Plot only the logistic curve fit
+        plt.plot(x_fit_scaled_co2, fit_line_co2, '--', color='red', label='Logistic Fit', linewidth='3')
+        
+        
+        # AIR Condition FIT
+        # Fit the logistic function to the data with adjusted bounds
+        x_air = windowed_features['window_index'][windowed_features['Condition'] == 'AIR']
+        y_air = windowed_features[feature_column][windowed_features['Condition'] == 'AIR']
+        popt_air, _ = curve_fit(air_function, x_air, y_air, bounds=([0, 0, 0], [np.max(y_air), np.max(x_air), np.max(x_air)]))
+        
+        a, b, c = popt_air
+        # Print the logistic equation
+        print(f"AIR Quadratic Equation: y = {a} * (x - {c})^2 + {b}")
+        
+        # Generate y values using the fitted parameters for the desired x range
+        x_fit_air = np.linspace(min(x_air), max(x_air), 1000)  # Adjust the number of points as needed
+        fit_line_air = air_function(x_fit_air, *popt_air)
+        
+        # Scale x_fit to the range [0, 20]
+        x_fit_scaled_air = (x_fit_air - min(x_fit_air)) / (max(x_fit_air) - min(x_fit_air)) * 20
+        
+        # Plot only the logistic curve fit
+        plt.plot(x_fit_scaled_air, fit_line_air, '--', color='blue', label='Quadratic Fit', linewidth='3')
+        
+        
+        
+        # Customize plot titles and labels
+        #plt.title(title, weight='bold')
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        #plt.xticks(np.arange(0, 21, 5))
+        plt.xlim([0, 20])
+    
+        
+        #if(not plot_path):
+          #   plt.savefig(plot_path)
+        plt.savefig(plot_path)
+        
+        # Display the plot
+        plt.show()
+        
+    def features_time_series_rr(windowed_features, feature_column, title, xlabel, ylabel, air_function, co2_function, plot_path=False):
+          
+        
+        plt.figure(figsize=(6, 5))
+        mean_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].mean().reset_index()
+        
+        # Scale the x-axis values to a range between 0 and 20
+        mean_gsr['condition_index'] = (mean_gsr.groupby('Condition').cumcount() / mean_gsr['window_index'].max()) * 20
+        
+        # Compute the standard error of the mean
+        sem_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].sem().reset_index()
+        sem_gsr_air = sem_gsr[sem_gsr['Condition']=='AIR']
+        sem_gsr_co2 = sem_gsr[sem_gsr['Condition']=='CO2']
+        
+        # Set the plot style
+        sns.set(style='whitegrid')
+        
+        # Plot the line plot
+        sns.lineplot(x=mean_gsr['condition_index'], y=feature_column, hue='Condition', data=mean_gsr, linewidth=3)
+            
+        plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column]-sem_gsr_air[feature_column], 
+                          mean_gsr[feature_column]+sem_gsr_air[feature_column], alpha=0.2)
+        
+        plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column]-sem_gsr_co2[feature_column], 
+                          mean_gsr[feature_column]+sem_gsr_co2[feature_column], alpha=0.2)
+        
+        
+        # CO2 Condition FIT
+        # Fit the logistic function to the data with adjusted bounds
+        x_co2 = windowed_features['window_index'][windowed_features['Condition'] == 'CO2']
+        y_co2 = windowed_features[feature_column][windowed_features['Condition'] == 'CO2']
+        initial_guess = [np.max(y_co2), 0.1, np.median(x_co2)]
+        popt_co2, _ = curve_fit(co2_function, x_co2, y_co2, p0=initial_guess)
+        #popt_co2, _ = curve_fit(co2_function, x_co2, y_co2, bounds=([0, 0, 0], [np.max(y_co2), np.max(x_co2), np.max(x_co2)]))
+        
+        a, b, c = popt_co2
+        # Print the logistic equation
+        print(f"CO2 Logistic Equation: y = {a} / (1 + e^(-{b} * (x - {c})))")
+        
+        # Generate y values using the fitted parameters for the desired x range
+        x_fit_co2 = np.linspace(min(x_co2), max(x_co2), 1000)  # Adjust the number of points as needed
+        fit_line_co2 = co2_function(x_fit_co2, *popt_co2)
+        
+        # Scale x_fit to the range [0, 20]
+        x_fit_scaled_co2 = (x_fit_co2 - min(x_fit_co2)) / (max(x_fit_co2) - min(x_fit_co2)) * 20
+        
+        # Plot only the logistic curve fit
+        plt.plot(x_fit_scaled_co2, fit_line_co2, '--', color='red', label='Logistic Fit', linewidth='3')
+        
+        
+        # AIR Condition FIT
+        # Fit the straight line function to the data with adjusted bounds
+        x_air = windowed_features['window_index'][windowed_features['Condition'] == 'AIR']
+        y_air = windowed_features[feature_column][windowed_features['Condition'] == 'AIR']
+        popt_air, _ = curve_fit(air_function, x_air, y_air, bounds=([0, 0], [np.max(y_air), np.max(x_air)]))
+        
+        m_air, c_air = popt_air
+        # Print the straight line equation
+        print(f"AIR Straight Line Equation: y = {m_air} * x + {c_air}")
+        
+        # Generate y values using the fitted parameters for the desired x range
+        x_fit_air = np.linspace(min(x_air), max(x_air), 1000)  # Adjust the number of points as needed
+        fit_line_air = air_function(x_fit_air, *popt_air)
+        
+        # Scale x_fit to the range [0, 20]
+        x_fit_scaled_air = (x_fit_air - min(x_fit_air)) / (max(x_fit_air) - min(x_fit_air)) * 20
+        
+        # Plot only the straight line fit
+        plt.plot(x_fit_scaled_air, fit_line_air, '--', color='blue', label='Straight Line Fit', linewidth=3)
+        
+        
+        
+        # Customize plot titles and labels
+        #plt.title(title, weight='bold')
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        #plt.xticks(np.arange(0, 21, 5))
+        plt.xlim([0, 20])
+        
+        # Save or display the plot
+        if plot_path:
+            plt.savefig(plot_path)
+        plt.show()
+        
+    def features_time_series_hr(windowed_features, feature_column, title, xlabel, ylabel, air_function, co2_function, plot_path=False, 
+                                  ):
+        plt.figure(figsize=(6, 5))
+        mean_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].mean().reset_index()
+        
+        # Scale the x-axis values to a range between 0 and 20
+        mean_gsr['condition_index'] = (mean_gsr.groupby('Condition').cumcount() / mean_gsr['window_index'].max()) * 20
+        
+        
+        # Compute the standard error of the mean
+        sem_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].sem().reset_index()
+        sem_gsr_air = sem_gsr[sem_gsr['Condition']=='AIR']
+        sem_gsr_co2 = sem_gsr[sem_gsr['Condition']=='CO2']
+        
+        # Set the plot style
+        sns.set(style='whitegrid')
+        
+        # Plot the line plot
+        sns.lineplot(x=mean_gsr['condition_index'], y=feature_column, hue='Condition', data=mean_gsr, linewidth=3)
+            
+        plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column]-sem_gsr_air[feature_column], 
+                          mean_gsr[feature_column]+sem_gsr_air[feature_column], alpha=0.2)
+        
+        plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column]-sem_gsr_co2[feature_column], 
+                          mean_gsr[feature_column]+sem_gsr_co2[feature_column], alpha=0.2)
+        
+        
+        # CO2 Condition FIT
+        # Fit the logistic function to the data with adjusted bounds
+        x_co2 = windowed_features['window_index'][windowed_features['Condition'] == 'CO2']
+        y_co2 = windowed_features[feature_column][windowed_features['Condition'] == 'CO2']
+        popt_co2, _ = curve_fit(co2_function, x_co2, y_co2, bounds=([0, 0], [np.max(y_co2), np.max(x_co2)]))
+        
+        m_co2, c_co2 = popt_co2
+        # Print the straight line equation
+        print(f"CO2 Straight Line Equation: y = {m_co2} * x + {c_co2}")
+        
+        # Generate y values using the fitted parameters for the desired x range
+        x_fit_co2 = np.linspace(min(x_co2), max(x_co2), 1000)  # Adjust the number of points as needed
+        fit_line_co2 = co2_function(x_fit_co2, *popt_co2)
+        
+        # Scale x_fit to the range [0, 20]
+        x_fit_scaled_co2 = (x_fit_co2 - min(x_fit_co2)) / (max(x_fit_co2) - min(x_fit_co2)) * 20
+        
+        # Plot only the straight line fit
+        plt.plot(x_fit_scaled_co2, fit_line_co2, '--', color='red', label='Straight Line Fit', linewidth=3)
+        
+        
+        # AIR Condition FIT
+        # Fit the straight line function to the data with adjusted bounds
+        x_air = windowed_features['window_index'][windowed_features['Condition'] == 'AIR']
+        y_air = windowed_features[feature_column][windowed_features['Condition'] == 'AIR']
+        popt_air, _ = curve_fit(air_function, x_air, y_air, bounds=([0, 0], [np.max(y_air), np.max(x_air)]))
+        
+        m_air, c_air = popt_air
+        # Print the straight line equation
+        print(f"AIR Straight Line Equation: y = {m_air} * x + {c_air}")
+        
+        # Generate y values using the fitted parameters for the desired x range
+        x_fit_air = np.linspace(min(x_air), max(x_air), 1000)  # Adjust the number of points as needed
+        fit_line_air = air_function(x_fit_air, *popt_air)
+        
+        # Scale x_fit to the range [0, 20]
+        x_fit_scaled_air = (x_fit_air - min(x_fit_air)) / (max(x_fit_air) - min(x_fit_air)) * 20
+        
+        # Plot only the straight line fit
+        plt.plot(x_fit_scaled_air, fit_line_air, '--', color='blue', label='Straight Line Fit', linewidth=3)
+        
+        
+        
+        # Customize plot titles and labels
+        #plt.title(title, weight='bold')
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        #plt.xticks(np.arange(0, 21, 5))
+        plt.xlim([0, 20])
+    
+        
+        #if(not plot_path):
+          #   plt.savefig(plot_path)
+        plt.savefig(plot_path)
+        
+        # Display the plot
+        plt.show()
+        
+    def features_time_series_pupilsize(windowed_features, feature_column, title, xlabel, ylabel, air_function, co2_function, plot_path=False, 
+                                  ):
+        plt.figure(figsize=(6, 5))
+        mean_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].mean().reset_index()
+        
+        # Scale the x-axis values to a range between 0 and 20
+        mean_gsr['condition_index'] = (mean_gsr.groupby('Condition').cumcount() / mean_gsr['window_index'].max()) * 20
+        
+        
+        # Compute the standard error of the mean
+        sem_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].sem().reset_index()
+        sem_gsr_air = sem_gsr[sem_gsr['Condition']=='AIR']
+        sem_gsr_co2 = sem_gsr[sem_gsr['Condition']=='CO2']
+        
+        # Set the plot style
+        sns.set(style='whitegrid')
+        
+        # Plot the line plot
+        sns.lineplot(x=mean_gsr['condition_index'], y=feature_column, hue='Condition', data=mean_gsr, linewidth=3)
+            
+        plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column]-sem_gsr_air[feature_column], 
+                          mean_gsr[feature_column]+sem_gsr_air[feature_column], alpha=0.2)
+        
+        plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column]-sem_gsr_co2[feature_column], 
+                          mean_gsr[feature_column]+sem_gsr_co2[feature_column], alpha=0.2)
+        
+        
+        # CO2 Condition FIT
+        # Fit the 4th-order polynomial function to the data with adjusted initial guess
+        x_co2 = windowed_features['window_index'][windowed_features['Condition'] == 'CO2']
+        y_co2 = windowed_features[feature_column][windowed_features['Condition'] == 'CO2']
+        
+        # Initial guess values for 4th-order polynomial function parameters
+        initial_guess_co2 = [1, 1, 1, 1, 1, 1]  # You may need to adjust these
+        
+        bounds_co2 = ([-np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf], [np.inf, np.inf, np.inf, np.inf, np.inf, np.inf])
+        popt_co2, _ = curve_fit(co2_function, x_co2, y_co2, p0=initial_guess_co2, bounds=bounds_co2)
+        
+        # Extract the fitted parameters
+        a, b, c, d, e, f = popt_co2
+        
+        # Print the 4th-order polynomial equation
+        print(f"CO2 5th-Order Polynomial Equation: y = {a} * x^5 + {b} * x^4 + {c} * x^3 + {d} * x^2 + {e} * x + {f}")
+        
+        # Generate y values using the fitted parameters for the desired x range
+        x_fit_co2 = np.linspace(min(x_co2), max(x_co2), 1000)  # Adjust the number of points as needed
+        fit_line_co2 = co2_function(x_fit_co2, *popt_co2)
+        
+        # Scale x_fit_co2 to the range [0, 20] (if needed)
+        x_fit_scaled_co2 = (x_fit_co2 - min(x_fit_co2)) / (max(x_fit_co2) - min(x_fit_co2)) * 20
+        
+        # Plot the 4th-order polynomial curve fit
+        plt.plot(x_fit_scaled_co2, fit_line_co2, '--', color='red', label='5th-Order Polynomial Fit', linewidth=3)
+        
+        
+        # AIR Condition FIT
+        # Fit the logistic function to the data with adjusted bounds
+        x_air = windowed_features['window_index'][windowed_features['Condition'] == 'AIR']
+        y_air = windowed_features[feature_column][windowed_features['Condition'] == 'AIR']
+        popt_air, _ = curve_fit(air_function, x_air, y_air, bounds=([0, 0, 0], [np.max(y_air), np.max(x_air), np.max(x_air)]))
+        
+        a, b, c = popt_air
+        # Print the logistic equation
+        print(f"AIR Quadratic Equation: y = {a} * (x - {c})^2 + {b}")
+        
+        # Generate y values using the fitted parameters for the desired x range
+        x_fit_air = np.linspace(min(x_air), max(x_air), 1000)  # Adjust the number of points as needed
+        fit_line_air = air_function(x_fit_air, *popt_air)
+        
+        # Scale x_fit to the range [0, 20]
+        x_fit_scaled_air = (x_fit_air - min(x_fit_air)) / (max(x_fit_air) - min(x_fit_air)) * 20
+        
+        # Plot only the logistic curve fit
+        plt.plot(x_fit_scaled_air, fit_line_air, '--', color='blue', label='Quadratic Fit', linewidth='3')
+        
+        
+        
+        # Customize plot titles and labels
+        #plt.title(title, weight='bold')
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        #plt.xticks(np.arange(0, 21, 5))
+        plt.xlim([0, 20])
+    
+        
+        #if(not plot_path):
+          #   plt.savefig(plot_path)
+        plt.savefig(plot_path)
+        
+        # Display the plot
+        plt.show()
+        
+    def features_time_series_rr2(windowed_features, feature_column, title, xlabel, ylabel, air_function, co2_function, plot_path=False):
+        plt.figure(figsize=(6, 5))
+        mean_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].mean().reset_index()
+    
+        mean_gsr['condition_index'] = (mean_gsr.groupby('Condition').cumcount() / mean_gsr['window_index'].max()) * 20
+    
+        sem_gsr = windowed_features.groupby(['Condition', 'window_index'])[feature_column].sem().reset_index()
+        sem_gsr_air = sem_gsr[sem_gsr['Condition'] == 'AIR']
+        sem_gsr_co2 = sem_gsr[sem_gsr['Condition'] == 'CO2']
+    
+        sns.set(style='whitegrid')
+    
+        sns.lineplot(x=mean_gsr['condition_index'], y=feature_column, hue='Condition', data=mean_gsr, linewidth=3)
+    
+        plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column] - sem_gsr_air[feature_column],
+                         mean_gsr[feature_column] + sem_gsr_air[feature_column], alpha=0.2)
+    
+        plt.fill_between(mean_gsr['condition_index'], mean_gsr[feature_column] - sem_gsr_co2[feature_column],
+                         mean_gsr[feature_column] + sem_gsr_co2[feature_column], alpha=0.2)
+    
+        # CO2 Condition FIT
+        # Fit the logistic function to the data with adjusted bounds
+        x_co2 = windowed_features['window_index'][windowed_features['Condition'] == 'CO2']
+        y_co2 = windowed_features[feature_column][windowed_features['Condition'] == 'CO2']
+        popt_co2, _ = curve_fit(co2_function, x_co2, y_co2, bounds=([0, 0, 0], [np.max(y_co2), np.max(x_co2), np.max(x_co2)]))
+        
+        a, b, c = popt_co2
+        # Print the logistic equation
+        print(f"CO2 Logistic Equation: y = {a} / (1 + e^(-{b} * (x - {c})))")
+        
+        # Generate y values using the fitted parameters for the desired x range
+        x_fit_co2 = np.linspace(min(x_co2), max(x_co2), 1000)  # Adjust the number of points as needed
+        fit_line_co2 = co2_function(x_fit_co2, *popt_co2)
+        
+        # Scale x_fit to the range [0, 20]
+        x_fit_scaled_co2 = (x_fit_co2 - min(x_fit_co2)) / (max(x_fit_co2) - min(x_fit_co2)) * 20
+        
+        # Plot only the logistic curve fit
+        plt.plot(x_fit_scaled_co2, fit_line_co2, '--', color='red', label='Logistic Fit', linewidth='3')
+    
+        # AIR Condition FIT
+        x_air = windowed_features['window_index'][windowed_features['Condition'] == 'AIR']
+        y_air = windowed_features[feature_column][windowed_features['Condition'] == 'AIR']
+        popt_air, _ = curve_fit(air_function, x_air, y_air, bounds=([0, 0], [np.max(y_air), np.max(x_air)]))
+    
+        m_air, c_air = popt_air
+        print(f"AIR Straight Line Equation: y = {m_air} * x + {c_air}")
+    
+        x_fit_air = np.linspace(min(x_air), max(x_air), 1000)
+        fit_line_air = air_function(x_fit_air, *popt_air)
+    
+        x_fit_scaled_air = (x_fit_air - min(x_fit_air)) / (max(x_fit_air) - min(x_fit_air)) * 20
+        plt.plot(x_fit_scaled_air, fit_line_air, '--', color='blue', label='Straight Line Fit', linewidth=3)
+    
+        plt.title(title, weight='bold')
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.xlim([0, 20])
+    
+        if plot_path:
+            plt.savefig(plot_path)
+        plt.show()
+        
     def contact_gsr_line_plot(windowed_features, column_name, title, plot_directory):
         mean_contact = windowed_features.groupby(['Condition', 'window_index'])[column_name].mean().reset_index()
         mean_contact['condition_index'] = (mean_contact.groupby('Condition').cumcount() / mean_contact['window_index'].max()) * 20
@@ -472,6 +891,26 @@ class Plots:
         
     def segment_violin(segment_features, column_name, title, x_label, y_label, plot_directory):
             
+        plt.figure(figsize=(6, 5))
+        # Create the violin plot
+        sns.violinplot(x='Condition', y=column_name, data=segment_features)
+        
+        
+        # Customize plot titles and labels
+        sns.set(style='whitegrid')
+        #plt.title(title, weight='bold')
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        #plt.figure(figsize=(16, 5))
+
+        
+        plt.savefig(os.path.join(plot_directory, column_name.replace('/', '_').replace('[', '_').replace(']', '_') + '_segments'))
+        
+        # Display the plot
+        plt.show()
+    
+    def segment_violin_imu2(segment_features, column_name, title, x_label, y_label, plot_directory):
+            
         # Create the violin plot
         sns.violinplot(x='Condition', y=column_name, data=segment_features)
         
@@ -484,6 +923,32 @@ class Plots:
         
         plt.savefig(os.path.join(plot_directory, column_name.replace('/', '_').replace('[', '_').replace(']', '_') + '_segments'))
         
+        # Display the plot
+        plt.show()
+        
+    def segment_violin_imu(segment_features, axes_columns, title, x_label, y_label, plot_directory):
+        # Melt the DataFrame to create a single column for axes and a 'Condition' column
+        melted_data = segment_features.melt(id_vars='Condition', value_vars=axes_columns, var_name='Axis', value_name='Value')
+    
+        # Create the violin plot
+        violin = sns.violinplot(x='Condition', y='Value', hue='Axis', data=melted_data)
+    
+        # Customize plot titles and labels
+        sns.set(style='whitegrid')
+        plt.title(title, weight='bold')
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        
+        # Rename the legend
+        legend = violin.get_legend()
+        # Manually set labels
+        legend.texts[0].set_text('X')
+        legend.texts[1].set_text('Y')
+        legend.texts[2].set_text('Z')
+    
+        # Save the plot
+        plt.savefig(os.path.join(plot_directory, title.replace(' ', '_') + '_segments'))
+    
         # Display the plot
         plt.show()
         
@@ -680,15 +1145,15 @@ class Plots:
         bars_co2 = ax.bar(positions_co2, mean_co2, yerr=sem_co2, width=bar_width, label='CO2', capsize=5)
         
         # Set x-axis labels and ticks
-        ax.set_xticks(positions_air + bar_width / 2)
+        ax.set_xticks(positions_air + bar_width / 2 + 0.4)
         ax.set_xticklabels(['RightOrbicularis', 'RightZygomaticus', 'RightFrontalis', 'CenterCorrugator', 'LeftFrontalis', 'LeftZygomaticus', 'LeftOrbicularis'])
         plt.xticks(rotation=45, ha='right')
         
         # Set y-axis label
-        ax.set_ylabel('Mean Skin Impedance')
+        ax.set_ylabel('Facial Skin Impedance')
         
         # Set plot title and legend
-        plt.title('Mean Skin Impedance Comparison between Air and CO2')
+        #plt.title('Mean Skin Impedance Comparison between Air and CO2')
         plt.legend()
         
         # Show the plot
@@ -729,15 +1194,15 @@ class Plots:
         bars_co2 = ax.bar(positions_co2, mean_co2, yerr=sem_co2, width=bar_width, label='CO2', capsize=5)
         
         # Set x-axis labels and ticks
-        ax.set_xticks(positions_air + bar_width / 2)
+        ax.set_xticks(positions_air + bar_width / 2 + 0.4)
         ax.set_xticklabels(['RightOrbicularis', 'RightZygomaticus', 'RightFrontalis', 'CenterCorrugator', 'LeftFrontalis', 'LeftZygomaticus', 'LeftOrbicularis'])
         plt.xticks(rotation=45, ha='right')
         
         # Set y-axis label
-        ax.set_ylabel('Mean EMG Amplitude')
+        ax.set_ylabel('Facial EMG Amplitude')
         
         # Set plot title and legend
-        plt.title('Mean EMG Amplitude Comparison between Air and CO2')
+        #plt.title('Mean EMG Amplitude Comparison between Air and CO2')
         plt.legend()
         
         # Show the plot
