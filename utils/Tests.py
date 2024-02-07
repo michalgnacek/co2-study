@@ -194,7 +194,9 @@ class Tests:
         mean_columns = data_windows.columns[data_windows.columns.str.contains('_mean|_Mean|HRV|SCR_Peaks_N|RSP_Phase_Duration_Ratio|EDA_Tonic_SD|pupil_size_combined')].tolist()
         mean_columns = list(filter(lambda item: 'derivative' not in item, mean_columns))
         mean_columns = list(filter(lambda item: 'Filtered' not in item, mean_columns))
-        mean_columns.remove('Ppg/Raw.ppg_mean')
+        # Remove 'Ppg/Raw.ppg_mean' column if it exists in the list
+        if 'Ppg/Raw.ppg_mean' in mean_columns:
+            mean_columns.remove('Ppg/Raw.ppg_mean')
         
         # select only the desired features columns
         df = data_windows[mean_columns]
@@ -242,7 +244,12 @@ class Tests:
         
         # Drop columns we do not want
         features_to_drop = ['HeartRate(EmteqPro)']
-        df = df.drop(columns=features_to_drop)
+        # Iterate over each feature to drop
+        for feature in features_to_drop:
+            # Check if the feature exists in the DataFrame
+            if feature in df.columns:
+                # Drop the feature if it exists
+                df = df.drop(columns=[feature])
 
         # compute the correlation matrix
         corr_matrix = df.corr(method=lambda x, y: pearsonr(x, y)[0])
