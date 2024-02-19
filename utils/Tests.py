@@ -27,6 +27,8 @@ class Tests:
         print("Data for " + condition_name + " condition is " + normality_string + " normally distributed.")
     
         return shapiro_test
+    
+
         
     def paired_t_test(condition_1_data, condition_2_data):
         # Perform the paired t-test
@@ -39,8 +41,23 @@ class Tests:
         else:
             results_string = "SIGNIFICANT difference found."
         print(results_string)
-        
+                
         return t_statistic, p_value
+    
+    def cohend(d1, d2):
+        # calculate the size of samples
+        n1, n2 = len(d1), len(d2)
+        # calculate the variance of the samples
+        s1, s2 = np.var(d1, ddof=1), np.var(d2, ddof=1)
+        # calculate the pooled standard deviation
+        s = np.sqrt(((n1 - 1) * s1 + (n2 - 1) * s2) / (n1 + n2 - 2))
+        # calculate the means of the samples
+        u1, u2 = np.mean(d1), np.mean(d2)
+        # calculate the effect size
+        cohen_d = (u1 - u2) / s
+        print(f"Cohen's d': {cohen_d:.3f}")
+        return cohen_d
+    
     
     def regression_tests_linear(air_windows, co2_windows, combined_windows, dependent_variable):
         print('Running linear regression model independently for air and co2 conditions for: ' + dependent_variable)

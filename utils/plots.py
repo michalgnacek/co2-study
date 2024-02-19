@@ -11,6 +11,7 @@ from scipy import stats
 import seaborn as sns
 import matplotlib.lines as mlines
 import numpy as np
+import pandas as pd
 from scipy.optimize import curve_fit
 import math
 
@@ -1033,7 +1034,9 @@ class Plots:
         # contact_air_windows and contact_co2_windows
         
         # Choose the columns representing different muscles/contacts to compare
-        columns_to_compare = ['Emg_Contact_RightOrbicularis_mean', 'Emg_Contact_RightZygomaticus_mean', 'Emg_Contact_RightFrontalis_mean', 'Emg_Contact_CenterCorrugator_mean', 'Emg_Contact_LeftFrontalis_mean', 'Emg_Contact_LeftZygomaticus_mean', 'Emg_Contact_LeftOrbicularis_mean']
+        #columns_to_compare = ['Emg_Contact_RightOrbicularis_mean', 'Emg_Contact_RightZygomaticus_mean', 'Emg_Contact_RightFrontalis_mean', 'Emg_Contact_CenterCorrugator_mean', 'Emg_Contact_LeftFrontalis_mean', 'Emg_Contact_LeftZygomaticus_mean', 'Emg_Contact_LeftOrbicularis_mean']
+        columns_to_compare = ['Emg_Contact_LeftFrontalis_mean', 'Emg_Contact_RightFrontalis_mean', 'Emg_Contact_LeftOrbicularis_mean', 'Emg_Contact_RightOrbicularis_mean', 'Emg_Contact_LeftZygomaticus_mean', 'Emg_Contact_RightZygomaticus_mean', 'Emg_Contact_CenterCorrugator_mean']
+        
         # Create a subset of the dataframes for the selected columns
         air_subset = contact_air_windows[columns_to_compare]
         co2_subset = contact_co2_windows[columns_to_compare]
@@ -1061,7 +1064,8 @@ class Plots:
         
         # Set x-axis labels and ticks
         ax.set_xticks(positions_air + bar_width / 2 + 0.4)
-        ax.set_xticklabels(['RightOrbicularis', 'RightZygomaticus', 'RightFrontalis', 'CenterCorrugator', 'LeftFrontalis', 'LeftZygomaticus', 'LeftOrbicularis'])
+        #ax.set_xticklabels(['RightOrbicularis', 'RightZygomaticus', 'RightFrontalis', 'CenterCorrugator', 'LeftFrontalis', 'LeftZygomaticus', 'LeftOrbicularis'])
+        ax.set_xticklabels(['LeftFrontalis*', 'RightFrontalis', 'LeftOrbicularis*', 'RightOrbicularis*', 'RightZygomaticus*', 'LeftZygomaticus*', 'CenterCorrugator*'])
         plt.xticks(rotation=45, ha='right')
         
         # Set y-axis label
@@ -1082,7 +1086,9 @@ class Plots:
         # contact_air_windows and contact_co2_windows
         
         # Choose the columns representing different muscles/contacts to compare
-        columns_to_compare = ['Emg_Amplitude_RightOrbicularis_mean', 'Emg_Amplitude_RightZygomaticus_mean', 'Emg_Amplitude_RightFrontalis_mean', 'Emg_Amplitude_CenterCorrugator_mean', 'Emg_Amplitude_LeftFrontalis_mean', 'Emg_Amplitude_LeftZygomaticus_mean', 'Emg_Amplitude_LeftOrbicularis_mean']
+        #columns_to_compare = ['Emg_Amplitude_RightOrbicularis_mean', 'Emg_Amplitude_RightZygomaticus_mean', 'Emg_Amplitude_RightFrontalis_mean', 'Emg_Amplitude_CenterCorrugator_mean', 'Emg_Amplitude_LeftFrontalis_mean', 'Emg_Amplitude_LeftZygomaticus_mean', 'Emg_Amplitude_LeftOrbicularis_mean']
+        columns_to_compare = ['Emg_Amplitude_LeftFrontalis_mean', 'Emg_Amplitude_RightFrontalis_mean', 'Emg_Amplitude_LeftOrbicularis_mean', 'Emg_Amplitude_RightOrbicularis_mean', 'Emg_Amplitude_LeftZygomaticus_mean', 'Emg_Amplitude_RightZygomaticus_mean', 'Emg_Amplitude_CenterCorrugator_mean']
+        
         # Create a subset of the dataframes for the selected columns
         air_subset = amp_air_windows[columns_to_compare]
         co2_subset = amp_co2_windows[columns_to_compare]
@@ -1110,7 +1116,8 @@ class Plots:
         
         # Set x-axis labels and ticks
         ax.set_xticks(positions_air + bar_width / 2 + 0.4)
-        ax.set_xticklabels(['RightOrbicularis', 'RightZygomaticus', 'RightFrontalis', 'CenterCorrugator', 'LeftFrontalis', 'LeftZygomaticus', 'LeftOrbicularis'])
+        #ax.set_xticklabels(['RightOrbicularis', 'RightZygomaticus', 'RightFrontalis', 'CenterCorrugator', 'LeftFrontalis', 'LeftZygomaticus', 'LeftOrbicularis'])
+        ax.set_xticklabels(['LeftFrontalis', 'RightFrontalis', 'LeftOrbicularis*', 'RightOrbicularis*', 'RightZygomaticus*', 'LeftZygomaticus*', 'CenterCorrugator'])
         plt.xticks(rotation=45, ha='right')
         
         # Set y-axis label
@@ -1124,6 +1131,32 @@ class Plots:
         plt.tight_layout()
         plt.savefig(plot_path)
         plt.show()
+        
+    def ratings_barplot(barplot_data, plot_path):
+
+        # Convert data to numeric, ignoring errors
+        baseline_data = barplot_data[['baseline_arousal_1', 'baseline_valence_1', 'baseline_anxiety']].apply(pd.to_numeric, errors='coerce').dropna()
+        category_1_data = barplot_data[['arousal_1_1', 'valence_1_1', 'anxiety_1']].apply(pd.to_numeric, errors='coerce').dropna()
+        category_2_data = barplot_data[['arousal_2_1', 'valence_2_1', 'anxiety_2']].apply(pd.to_numeric, errors='coerce').dropna()
+        
+        # Plotting
+        categories = ['Baseline', 'Air', 'CO2']
+        variables = ['Arousal', 'Valence', 'Anxiety']
+        
+        fig, axs = plt.subplots(1, 3, figsize=(10, 5))  # 1 row, 3 columns
+        
+        colors = [(0/255, 166/255, 147/255), (102/255, 110/255, 169/255), (190/255, 142/255, 93/255)]
+        
+        for i, ax in enumerate(axs):
+            data = [baseline_data.iloc[:, i], category_1_data.iloc[:, i], category_2_data.iloc[:, i]]
+            ax.bar(categories, [np.mean(d) for d in data], yerr=[np.std(d) / np.sqrt(len(d)) for d in data], capsize=5, color=colors)
+            ax.set_ylabel(variables[i])
+            ax.set_title(variables[i])
+        
+        plt.tight_layout()
+        plt.savefig(plot_path)
+        plt.show()
+
 
 
     
