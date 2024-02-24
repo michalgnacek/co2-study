@@ -300,11 +300,14 @@ class Plots:
                           mean_gsr[feature_column]+sem_gsr_co2[feature_column], alpha=0.2)
         
         # Customize plot titles and labels
-        plt.title(title, weight='bold')
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
+        plt.title(title, weight='bold', fontsize = 16)
+        plt.xlabel(xlabel, fontsize = 16)
+        plt.ylabel(ylabel, fontsize = 16)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14) 
         #plt.xticks(np.arange(0, 21, 5))
         plt.xlim([0, 20])
+        
         
         if(not len(co2_prediction_line)==0):
             plt.plot((co2_prediction_line[0] * 20 / 114), co2_prediction_line[1], color='red', label='CO2 Fitted', linestyle=(0, (5, 10)))
@@ -314,6 +317,7 @@ class Plots:
         
         #if(not plot_path):
           #   plt.savefig(plot_path)
+        plt.tight_layout()
         plt.savefig(plot_path)
         
         # Display the plot
@@ -402,10 +406,13 @@ class Plots:
         
         # Customize plot titles and labels
         #plt.title(title, weight='bold')
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
+        plt.xlabel(xlabel, fontsize = 16)
+        plt.ylabel(ylabel, fontsize = 16)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14) 
         #plt.xticks(np.arange(0, 21, 5))
         plt.xlim([0, 20])
+        plt.tight_layout()
     
         
         #if(not plot_path):
@@ -493,6 +500,11 @@ class Plots:
         plt.ylabel(ylabel)
         #plt.xticks(np.arange(0, 21, 5))
         plt.xlim([0, 20])
+        plt.xlabel(xlabel, fontsize = 16)
+        plt.ylabel(ylabel, fontsize = 16)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14) 
+        plt.tight_layout()
         
         # Save or display the plot
         if plot_path:
@@ -575,6 +587,11 @@ class Plots:
         plt.ylabel(ylabel)
         #plt.xticks(np.arange(0, 21, 5))
         plt.xlim([0, 20])
+        plt.xlabel(xlabel, fontsize = 16)
+        plt.ylabel(ylabel, fontsize = 16)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14) 
+        plt.tight_layout()
     
         
         #if(not plot_path):
@@ -667,6 +684,11 @@ class Plots:
         plt.ylabel(ylabel)
         #plt.xticks(np.arange(0, 21, 5))
         plt.xlim([0, 20])
+        plt.xlabel(xlabel, fontsize = 16)
+        plt.ylabel(ylabel, fontsize = 16)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14) 
+        plt.tight_layout()
     
         
         #if(not plot_path):
@@ -815,8 +837,11 @@ class Plots:
         # Customize plot titles and labels
         sns.set(style='whitegrid')
         #plt.title(title, weight='bold')
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
+        plt.xlabel(x_label, fontsize = 16)
+        plt.ylabel(y_label, fontsize = 16)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
+        plt.tight_layout() 
         #plt.figure(figsize=(16, 5))
 
         
@@ -1059,21 +1084,22 @@ class Plots:
         sem_co2 = co2_subset.sem()
         
         # Create the bar groups with error bars
-        bars_air = ax.bar(positions_air, mean_air, yerr=sem_air, width=bar_width, label='Air', capsize=5)
+        bars_air = ax.bar(positions_air, mean_air, yerr=sem_air, width=bar_width, label='AIR', capsize=5)
         bars_co2 = ax.bar(positions_co2, mean_co2, yerr=sem_co2, width=bar_width, label='CO2', capsize=5)
         
         # Set x-axis labels and ticks
         ax.set_xticks(positions_air + bar_width / 2 + 0.4)
         #ax.set_xticklabels(['RightOrbicularis', 'RightZygomaticus', 'RightFrontalis', 'CenterCorrugator', 'LeftFrontalis', 'LeftZygomaticus', 'LeftOrbicularis'])
         ax.set_xticklabels(['LeftFrontalis*', 'RightFrontalis', 'LeftOrbicularis*', 'RightOrbicularis*', 'RightZygomaticus*', 'LeftZygomaticus*', 'CenterCorrugator*'])
-        plt.xticks(rotation=45, ha='right')
+        plt.xticks(rotation=45, ha='right', fontsize=14)
+        plt.yticks(fontsize=14)
         
         # Set y-axis label
-        ax.set_ylabel('Facial Skin Impedance')
+        ax.set_ylabel('Facial Skin Impedance', fontsize = 16)
         
         # Set plot title and legend
         #plt.title('Mean Skin Impedance Comparison between Air and CO2')
-        plt.legend()
+        plt.legend(fontsize=14)
         
         # Show the plot
         plt.tight_layout()
@@ -1111,21 +1137,22 @@ class Plots:
         sem_co2 = co2_subset.sem()
         
         # Create the bar groups with error bars
-        bars_air = ax.bar(positions_air, mean_air, yerr=sem_air, width=bar_width, label='Air', capsize=5)
+        bars_air = ax.bar(positions_air, mean_air, yerr=sem_air, width=bar_width, label='AIR', capsize=5)
         bars_co2 = ax.bar(positions_co2, mean_co2, yerr=sem_co2, width=bar_width, label='CO2', capsize=5)
         
         # Set x-axis labels and ticks
         ax.set_xticks(positions_air + bar_width / 2 + 0.4)
         #ax.set_xticklabels(['RightOrbicularis', 'RightZygomaticus', 'RightFrontalis', 'CenterCorrugator', 'LeftFrontalis', 'LeftZygomaticus', 'LeftOrbicularis'])
         ax.set_xticklabels(['LeftFrontalis', 'RightFrontalis', 'LeftOrbicularis*', 'RightOrbicularis*', 'RightZygomaticus*', 'LeftZygomaticus*', 'CenterCorrugator'])
-        plt.xticks(rotation=45, ha='right')
+        plt.xticks(rotation=45, ha='right', fontsize = 14)
+        plt.yticks(fontsize=14)
         
         # Set y-axis label
-        ax.set_ylabel('Facial EMG Amplitude')
+        ax.set_ylabel('Facial EMG Amplitude', fontsize = 16)
         
         # Set plot title and legend
         #plt.title('Mean EMG Amplitude Comparison between Air and CO2')
-        plt.legend()
+        plt.legend(fontsize = 14)
         
         # Show the plot
         plt.tight_layout()
@@ -1150,8 +1177,12 @@ class Plots:
         for i, ax in enumerate(axs):
             data = [baseline_data.iloc[:, i], category_1_data.iloc[:, i], category_2_data.iloc[:, i]]
             ax.bar(categories, [np.mean(d) for d in data], yerr=[np.std(d) / np.sqrt(len(d)) for d in data], capsize=5, color=colors)
-            ax.set_ylabel(variables[i])
-            ax.set_title(variables[i])
+            ax.set_ylabel(variables[i], fontsize = 14)
+            ax.set_title(variables[i], fontsize = 16)
+            # Set x and y ticks font size
+            ax.tick_params(axis='x', labelsize=14)
+            ax.tick_params(axis='y', labelsize=14)
+
         
         plt.tight_layout()
         plt.savefig(plot_path)
